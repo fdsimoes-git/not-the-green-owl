@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lesson - Not The Green Owl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes confetti { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(-100px) rotate(720deg); opacity: 0; } }
+        @keyframes scoreReveal { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        :root {
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --color-bg-deep: #0a0f1a;
+            --color-bg-base: #0f172a;
+            --color-bg-elevated: #1e293b;
+            --color-bg-surface: #334155;
+            --color-accent-primary: #f59e0b;
+            --color-accent-secondary: #fbbf24;
+            --color-accent-tertiary: #d97706;
+            --color-success: #10b981;
+            --color-success-muted: rgba(16, 185, 129, 0.15);
+            --color-danger: #ef4444;
+            --color-danger-muted: rgba(239, 68, 68, 0.15);
+            --color-text-primary: #f8fafc;
+            --color-text-secondary: #94a3b8;
+            --color-text-muted: #64748b;
+            --color-border: rgba(148, 163, 184, 0.15);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition-base: 0.25s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-body); background: var(--color-bg-deep); color: var(--color-text-primary); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); opacity: 0.03; pointer-events: none; z-index: 1000; }
+
+        .nav { position: sticky; top: 0; z-index: 100; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--color-border); padding: 0 2rem; display: flex; align-items: center; height: 64px; }
+        .nav-brand { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--color-accent-primary); margin-right: 2rem; text-decoration: none; }
+        .nav-right { margin-left: auto; }
+        .back-btn { background: none; border: 1px solid var(--color-border); color: var(--color-text-secondary); padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: var(--font-body); transition: all var(--transition-base); text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .back-btn:hover { border-color: var(--color-accent-primary); color: var(--color-accent-primary); }
+
+        .main { max-width: 800px; margin: 0 auto; padding: 2rem; }
+
+        /* Progress bar */
+        .lesson-progress { margin-bottom: 2rem; }
+        .lesson-progress .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .lesson-progress .progress-header h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; }
+        .lesson-progress .progress-header .counter { font-size: 0.875rem; color: var(--color-text-muted); }
+        .progress-track { height: 8px; background: var(--color-bg-surface); border-radius: 4px; overflow: hidden; }
+        .progress-track .progress-fill { height: 100%; background: var(--color-accent-primary); border-radius: 4px; transition: width 0.5s ease; }
+
+        /* Exercise card */
+        .exercise-card { background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 1.5rem; animation: fadeInUp 0.4s ease; }
+        .exercise-type-badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 20px; background: rgba(245, 158, 11, 0.15); color: var(--color-accent-primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .exercise-question { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; line-height: 1.6; }
+        .exercise-question .passage { background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem; font-size: 0.95rem; line-height: 1.8; color: var(--color-text-secondary); }
+
+        /* Options */
+        .options-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .option-btn { background: var(--color-bg-base); border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; text-align: left; cursor: pointer; font-family: var(--font-body); font-size: 0.95rem; color: var(--color-text-primary); transition: all var(--transition-base); display: flex; align-items: center; gap: 0.75rem; }
+        .option-btn:hover { border-color: var(--color-accent-primary); background: rgba(245, 158, 11, 0.05); }
+        .option-btn.selected { border-color: var(--color-accent-primary); background: rgba(245, 158, 11, 0.1); }
+        .option-btn.correct { border-color: var(--color-success); background: var(--color-success-muted); }
+        .option-btn.incorrect { border-color: var(--color-danger); background: var(--color-danger-muted); }
+        .option-letter { width: 28px; height: 28px; border-radius: 50%; background: var(--color-bg-surface); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+
+        /* Text input */
+        .text-input { width: 100%; padding: 1rem 1.25rem; background: var(--color-bg-base); border: 2px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 1rem; color: var(--color-text-primary); transition: all var(--transition-base); }
+        .text-input:focus { outline: none; border-color: var(--color-accent-primary); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+        textarea.text-input { min-height: 150px; resize: vertical; }
+
+        /* TF/NG buttons */
+        .tf-options { display: flex; gap: 0.75rem; }
+        .tf-btn { flex: 1; padding: 1rem; background: var(--color-bg-base); border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-body); font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); transition: all var(--transition-base); text-align: center; }
+        .tf-btn:hover { border-color: var(--color-accent-primary); }
+        .tf-btn.selected { border-color: var(--color-accent-primary); background: rgba(245, 158, 11, 0.1); }
+
+        /* Matching */
+        .matching-pairs { display: flex; flex-direction: column; gap: 0.75rem; }
+        .matching-row { display: flex; align-items: center; gap: 1rem; }
+        .matching-left { flex: 1; padding: 0.75rem 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.9rem; }
+        .matching-select { flex: 1; padding: 0.75rem 1rem; background: var(--color-bg-base); border: 2px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.9rem; color: var(--color-text-primary); }
+
+        /* Ordering */
+        .ordering-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .ordering-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: grab; }
+        .ordering-item .drag-handle { color: var(--color-text-muted); cursor: grab; }
+        .ordering-arrows { display: flex; flex-direction: column; gap: 0.25rem; }
+        .ordering-arrows button { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 0.75rem; padding: 0.1rem 0.3rem; }
+        .ordering-arrows button:hover { color: var(--color-accent-primary); }
+
+        /* Self-assessment */
+        .self-assess { margin-top: 1rem; }
+        .self-assess label { display: block; font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.5rem; }
+        .self-assess input[type="range"] { width: 100%; accent-color: var(--color-accent-primary); }
+        .self-assess .range-value { text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--color-accent-primary); margin-top: 0.5rem; }
+
+        /* Navigation buttons */
+        .exercise-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; }
+        .btn { padding: 0.9rem 2rem; border: none; border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all var(--transition-base); }
+        .btn-primary { background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-tertiary)); color: var(--color-bg-deep); box-shadow: 0 4px 24px rgba(245, 158, 11, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4); }
+        .btn-secondary { background: var(--color-bg-surface); color: var(--color-text-primary); }
+        .btn-secondary:hover { background: var(--color-bg-elevated); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn.loading { position: relative; color: transparent !important; pointer-events: none; }
+        .btn.loading::after { content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%; margin: -10px 0 0 -10px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+
+        /* Results screen */
+        .results-screen { text-align: center; animation: fadeInUp 0.5s ease; }
+        .results-score { font-family: var(--font-display); font-size: 4rem; font-weight: 700; color: var(--color-accent-primary); animation: scoreReveal 0.6s ease; margin: 1rem 0; }
+        .results-label { font-size: 1.1rem; color: var(--color-text-secondary); margin-bottom: 2rem; }
+        .results-stats { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .results-stat { text-align: center; }
+        .results-stat .stat-value { font-size: 1.5rem; font-weight: 700; }
+        .results-stat .stat-label { font-size: 0.8rem; color: var(--color-text-muted); }
+        .results-details { text-align: left; margin-top: 2rem; }
+        .result-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 0.5rem; }
+        .result-item.correct { background: var(--color-success-muted); }
+        .result-item.incorrect { background: var(--color-danger-muted); }
+        .result-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .result-icon.correct { background: var(--color-success); }
+        .result-icon.incorrect { background: var(--color-danger); }
+        .result-text { font-size: 0.875rem; }
+        .result-explanation { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem; }
+
+        /* Achievement toast */
+        .achievement-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--color-bg-elevated); border: 1px solid var(--color-accent-primary); border-radius: var(--radius-md); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: var(--shadow-lg); z-index: 500; animation: fadeInUp 0.5s ease; }
+        .achievement-toast .toast-icon { font-size: 1.5rem; }
+        .achievement-toast .toast-text h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .achievement-toast .toast-text p { font-size: 0.75rem; color: var(--color-text-muted); }
+
+        .loading-container { display: flex; justify-content: center; padding: 4rem; }
+        .spinner { width: 32px; height: 32px; border: 3px solid var(--color-border); border-top-color: var(--color-accent-primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
+        .hidden { display: none !important; }
+
+        .lang-toggle { position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 999; width: 2.5rem; height: 2.5rem; padding: 0; background: var(--color-bg-elevated); color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: 50%; font-size: 1.25rem; cursor: pointer; transition: all var(--transition-base); box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; }
+        .lang-toggle:hover { background: var(--color-bg-surface); border-color: var(--color-accent-primary); color: var(--color-accent-primary); transform: none; }
+
+        @media (max-width: 768px) {
+            .nav { padding: 0 1rem; }
+            .main { padding: 1.5rem 1rem; }
+            .exercise-card { padding: 1.5rem; }
+            .results-score { font-size: 3rem; }
+            .tf-options { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <button class="lang-toggle" onclick="setLang(getLang()==='en'?'pt':'en')">🌐</button>
+
+    <nav class="nav">
+        <a href="/index.html" class="nav-brand">Not The Green Owl</a>
+        <div class="nav-right">
+            <a href="/learn.html" class="back-btn" id="backBtn" data-i18n="lesson.backToLessons">Back to Lessons</a>
+        </div>
+    </nav>
+
+    <div class="main">
+        <div id="loadingContainer" class="loading-container">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Exercise View -->
+        <div id="exerciseView" class="hidden">
+            <div class="lesson-progress">
+                <div class="progress-header">
+                    <h2 id="lessonTitle"></h2>
+                    <span class="counter" id="exerciseCounter"></span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="exerciseContainer"></div>
+
+            <div class="exercise-nav">
+                <button class="btn btn-secondary" id="prevBtn" data-i18n="lesson.previous">Previous</button>
+                <button class="btn btn-primary" id="nextBtn" data-i18n="lesson.next">Next Exercise</button>
+            </div>
+        </div>
+
+        <!-- Results View -->
+        <div id="resultsView" class="hidden">
+            <div class="results-screen">
+                <h2 data-i18n="lesson.results" style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 0.5rem;">Results</h2>
+                <div class="results-score" id="resultScore">0%</div>
+                <div class="results-label" id="resultLabel"></div>
+
+                <div class="results-stats">
+                    <div class="results-stat">
+                        <div class="stat-value" id="resultXp" style="color: var(--color-accent-primary);">+0</div>
+                        <div class="stat-label" data-i18n="lesson.xpEarned">XP Earned</div>
+                    </div>
+                    <div class="results-stat">
+                        <div class="stat-value" id="resultCorrect" style="color: var(--color-success);">0</div>
+                        <div class="stat-label" data-i18n="lesson.correct">Correct</div>
+                    </div>
+                    <div class="results-stat">
+                        <div class="stat-value" id="resultIncorrect" style="color: var(--color-danger);">0</div>
+                        <div class="stat-label" data-i18n="lesson.incorrect">Incorrect</div>
+                    </div>
+                </div>
+
+                <div class="results-details" id="resultDetails"></div>
+
+                <div class="exercise-nav" style="margin-top: 2rem; justify-content: center;">
+                    <button class="btn btn-secondary" id="tryAgainBtn" data-i18n="lesson.tryAgain">Try Again</button>
+                    <a href="/learn.html" class="btn btn-primary" style="text-decoration: none;" data-i18n="lesson.backToLessons">Back to Lessons</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="achievementToasts"></div>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/lesson.js"></script>
+</body>
+</html>

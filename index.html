@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dashboard - Not The Green Owl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes barGrow {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+
+        @keyframes progressFill {
+            from { width: 0; }
+        }
+
+        @keyframes fireFlicker {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        :root {
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            --color-bg-deep: #0a0f1a;
+            --color-bg-base: #0f172a;
+            --color-bg-elevated: #1e293b;
+            --color-bg-surface: #334155;
+
+            --color-accent-primary: #f59e0b;
+            --color-accent-secondary: #fbbf24;
+            --color-accent-tertiary: #d97706;
+
+            --color-success: #10b981;
+            --color-danger: #ef4444;
+
+            --color-text-primary: #f8fafc;
+            --color-text-secondary: #94a3b8;
+            --color-text-muted: #64748b;
+
+            --color-border: rgba(148, 163, 184, 0.15);
+
+            --color-listening: #3b82f6;
+            --color-reading: #10b981;
+            --color-writing: #f59e0b;
+            --color-speaking: #ef4444;
+
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.25s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg-deep);
+            margin: 0;
+            padding: 0;
+            padding-top: env(safe-area-inset-top, 0px);
+            min-height: calc(100vh - env(safe-area-inset-top, 0px));
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-y: auto;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Ambient background orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+            top: -150px;
+            right: -100px;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            animation: float 18s ease-in-out infinite reverse;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float 12s ease-in-out infinite;
+        }
+
+        /* ── Loading State ── */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--color-bg-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 900;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--color-bg-surface);
+            border-top: 3px solid var(--color-accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-text {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* ── Skeleton Placeholders ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--color-bg-elevated) 25%, var(--color-bg-surface) 50%, var(--color-bg-elevated) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: var(--radius-sm);
+        }
+
+        .skeleton-text {
+            height: 1rem;
+            width: 60%;
+            margin-bottom: 0.5rem;
+        }
+
+        .skeleton-number {
+            height: 2.5rem;
+            width: 40%;
+            margin-bottom: 0.25rem;
+        }
+
+        .skeleton-bar {
+            height: 0.5rem;
+            width: 100%;
+        }
+
+        /* ── Top Nav Bar ── */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 2rem;
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            height: 64px;
+            gap: 1rem;
+        }
+
+        .nav-brand {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-accent-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.9rem;
+            border-radius: var(--radius-sm);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: var(--color-text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--color-accent-primary);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .nav-link svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .nav-link .nav-label {
+            display: inline;
+        }
+
+        .nav-spacer {
+            flex: 1;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .nav-greeting {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+        }
+
+        .nav-greeting strong {
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--color-danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-family: var(--font-body);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-logout svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Mobile nav toggle */
+        .nav-mobile-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            padding: 0;
+            margin-left: auto;
+        }
+
+        .nav-mobile-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--color-text-primary);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-mobile-toggle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* ── Dashboard Content ── */
+        .dashboard {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .dashboard-header h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin: 0 0 0.25rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        .dashboard-header p {
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-base);
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.15s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(4) { animation-delay: 0.25s; }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(148, 163, 184, 0.25);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.band-card::before {
+            background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary));
+        }
+
+        .stat-card.streak-card::before {
+            background: linear-gradient(90deg, #ef4444, #f97316);
+        }
+
+        .stat-card.goal-card::before {
+            background: linear-gradient(90deg, var(--color-success), #34d399);
+        }
+
+        .stat-card.xp-card::before {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .band-card .stat-icon {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--color-accent-primary);
+        }
+
+        .streak-card .stat-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-danger);
+        }
+
+        .goal-card .stat-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+        }
+
+        .xp-card .stat-icon {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-sub {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Band gauge */
+        .band-gauge {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .gauge-ring {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+        }
+
+        .gauge-ring svg {
+            width: 64px;
+            height: 64px;
+            transform: rotate(-90deg);
+        }
+
+        .gauge-ring .gauge-bg {
+            fill: none;
+            stroke: var(--color-bg-surface);
+            stroke-width: 5;
+        }
+
+        .gauge-ring .gauge-fill {
+            fill: none;
+            stroke: var(--color-accent-primary);
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .gauge-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-accent-primary);
+        }
+
+        .gauge-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .gauge-info .stat-value {
+            font-size: 1rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .gauge-info .stat-sub {
+            font-size: 0.75rem;
+        }
+
+        /* Streak fire */
+        .streak-fire {
+            font-size: 1.5rem;
+            display: inline-block;
+            animation: fireFlicker 1s ease-in-out infinite;
+        }
+
+        /* Daily goal progress */
+        .goal-progress {
+            margin-top: 0.75rem;
+        }
+
+        .goal-bar-track {
+            height: 8px;
+            background: var(--color-bg-surface);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .goal-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-success), #34d399);
+            border-radius: 4px;
+            transition: width 1s ease;
+            animation: progressFill 1s ease backwards;
+        }
+
+        .goal-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        /* ── Section Titles ── */
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin: 0 0 1.25rem 0;
+            letter-spacing: -0.01em;
+        }
+
+        /* ── Skill Progress Section ── */
+        .skills-section {
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease 0.3s backwards;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        .skill-card {
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-base);
+        }
+
+        .skill-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .skill-card.listening::before { background: var(--color-listening); }
+        .skill-card.reading::before { background: var(--color-reading); }
+        .skill-card.writing::before { background: var(--color-writing); }
+        .skill-card.speaking::before { background: var(--color-speaking); }
+
+        .skill-card:hover.listening { border-color: rgba(59, 130, 246, 0.3); }
+        .skill-card:hover.reading { border-color: rgba(16, 185, 129, 0.3); }
+        .skill-card:hover.writing { border-color: rgba(245, 158, 11, 0.3); }
+        .skill-card:hover.speaking { border-color: rgba(239, 68, 68, 0.3); }
+
+        .skill-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .skill-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .skill-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .skill-card.listening .skill-icon { background: rgba(59, 130, 246, 0.15); color: var(--color-listening); }
+        .skill-card.reading .skill-icon { background: rgba(16, 185, 129, 0.15); color: var(--color-reading); }
+        .skill-card.writing .skill-icon { background: rgba(245, 158, 11, 0.15); color: var(--color-writing); }
+        .skill-card.speaking .skill-icon { background: rgba(239, 68, 68, 0.15); color: var(--color-speaking); }
+
+        .skill-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--color-text-primary);
+        }
+
+        .skill-band {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-top: 0.1rem;
+        }
+
+        .skill-progress {
+            margin-bottom: 0.75rem;
+        }
+
+        .skill-progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .skill-bar-track {
+            height: 6px;
+            background: var(--color-bg-surface);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+            animation: progressFill 1s ease 0.5s backwards;
+        }
+
+        .skill-card.listening .skill-bar-fill { background: var(--color-listening); }
+        .skill-card.reading .skill-bar-fill { background: var(--color-reading); }
+        .skill-card.writing .skill-bar-fill { background: var(--color-writing); }
+        .skill-card.speaking .skill-bar-fill { background: var(--color-speaking); }
+
+        .skill-lessons {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .skill-lessons strong {
+            color: var(--color-text-secondary);
+        }
+
+        /* ── Bottom Row: Activity + Quick Actions ── */
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Recent Activity Chart ── */
+        .activity-section {
+            animation: fadeInUp 0.5s ease 0.4s backwards;
+        }
+
+        .activity-card {
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 220px;
+            display: flex;
+            align-items: flex-end;
+            gap: 0;
+            padding-top: 1.5rem;
+        }
+
+        .chart-y-axis {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 100%;
+            padding-right: 0.75rem;
+            flex-shrink: 0;
+            width: 36px;
+        }
+
+        .chart-y-label {
+            font-size: 0.65rem;
+            color: var(--color-text-muted);
+            line-height: 1;
+        }
+
+        .chart-bars-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chart-grid {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .chart-gridlines {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .chart-gridline {
+            height: 1px;
+            background: var(--color-border);
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+            padding: 0 0.5rem;
+        }
+
+        .chart-bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .chart-bar {
+            width: 32px;
+            max-width: 100%;
+            border-radius: 6px 6px 2px 2px;
+            background: linear-gradient(180deg, var(--color-accent-primary), var(--color-accent-tertiary));
+            position: relative;
+            min-height: 4px;
+            transform-origin: bottom;
+            animation: barGrow 0.6s ease backwards;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.15);
+            transform: scaleY(1.02);
+        }
+
+        .chart-bar-wrapper:nth-child(1) .chart-bar { animation-delay: 0.5s; }
+        .chart-bar-wrapper:nth-child(2) .chart-bar { animation-delay: 0.55s; }
+        .chart-bar-wrapper:nth-child(3) .chart-bar { animation-delay: 0.6s; }
+        .chart-bar-wrapper:nth-child(4) .chart-bar { animation-delay: 0.65s; }
+        .chart-bar-wrapper:nth-child(5) .chart-bar { animation-delay: 0.7s; }
+        .chart-bar-wrapper:nth-child(6) .chart-bar { animation-delay: 0.75s; }
+        .chart-bar-wrapper:nth-child(7) .chart-bar { animation-delay: 0.8s; }
+
+        .chart-bar-tooltip {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-bg-base);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--color-accent-primary);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            pointer-events: none;
+        }
+
+        .chart-bar:hover .chart-bar-tooltip {
+            opacity: 1;
+        }
+
+        .chart-x-labels {
+            display: flex;
+            justify-content: space-around;
+            padding: 0.6rem 0.5rem 0;
+        }
+
+        .chart-x-label {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            text-align: center;
+            flex: 1;
+        }
+
+        .chart-x-label.today {
+            color: var(--color-accent-primary);
+            font-weight: 600;
+        }
+
+        /* ── Quick Actions ── */
+        .quick-actions-section {
+            animation: fadeInUp 0.5s ease 0.45s backwards;
+        }
+
+        .quick-actions-card {
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .quick-actions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .btn-continue {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 1.1rem 1.5rem;
+            background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-tertiary) 100%);
+            color: var(--color-bg-deep);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-family: var(--font-body);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            box-shadow: 0 4px 24px rgba(245, 158, 11, 0.3);
+            text-decoration: none;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-continue:active {
+            transform: translateY(0);
+        }
+
+        .btn-continue svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.9rem 1.25rem;
+            background: var(--color-bg-base);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-family: var(--font-body);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-bg-surface);
+            color: var(--color-text-primary);
+            border-color: rgba(148, 163, 184, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .btn-secondary-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .btn-secondary-arrow {
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ── Daily tip ── */
+        .daily-tip {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .daily-tip-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-accent-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .daily-tip-text {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+        }
+
+        /* ── Lang Toggle ── */
+        .lang-toggle {
+            position: fixed;
+            bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+            right: 1.25rem;
+            z-index: 999;
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            background: var(--color-bg-elevated);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 50%;
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lang-toggle:hover {
+            background: var(--color-bg-surface);
+            border-color: var(--color-accent-primary);
+            color: var(--color-accent-primary);
+            transform: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .skills-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .bottom-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--color-border);
+                flex-direction: column;
+                padding: 0.75rem;
+                gap: 0.25rem;
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            .nav-mobile-toggle {
+                display: flex;
+            }
+
+            .nav-greeting {
+                display: none;
+            }
+
+            .nav-spacer {
+                display: none;
+            }
+
+            .dashboard {
+                padding: 1.25rem;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1.25rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .chart-bar {
+                width: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard {
+                padding: 1rem;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.35rem;
+            }
+
+            .gauge-ring {
+                width: 52px;
+                height: 52px;
+            }
+
+            .gauge-ring svg {
+                width: 52px;
+                height: 52px;
+            }
+
+            .orb-1, .orb-2 {
+                opacity: 0.5;
+            }
+
+            .chart-bar {
+                width: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" data-i18n="dashboard.loading">Loading your dashboard...</div>
+    </div>
+
+    <!-- Lang toggle -->
+    <button class="lang-toggle" data-i18n-title="lang.switch.title" onclick="setLang(getLang()==='en'?'pt':'en')" aria-label="Toggle language">🌐</button>
+
+    <!-- Ambient orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Top Nav Bar -->
+    <nav class="top-nav">
+        <div class="nav-inner">
+            <a href="/index.html" class="nav-brand">Not The Green Owl</a>
+
+            <button class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle navigation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/index.html" class="nav-link active" data-i18n="nav.dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span class="nav-label" data-i18n="nav.dashboard">Dashboard</span>
+                </a>
+                <a href="/learn.html" class="nav-link" data-i18n="nav.learn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <span class="nav-label" data-i18n="nav.learn">Learn</span>
+                </a>
+                <a href="/profile.html" class="nav-link" data-i18n="nav.profile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span class="nav-label" data-i18n="nav.profile">Profile</span>
+                </a>
+                <a href="/leaderboard.html" class="nav-link" data-i18n="nav.leaderboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 20V10"/>
+                        <path d="M12 20V4"/>
+                        <path d="M6 20v-6"/>
+                    </svg>
+                    <span class="nav-label" data-i18n="nav.leaderboard">Leaderboard</span>
+                </a>
+            </div>
+
+            <div class="nav-spacer"></div>
+
+            <div class="nav-user">
+                <span class="nav-greeting"><span data-i18n="nav.hello">Hello,</span> <strong id="navUsername">--</strong></span>
+                <button class="btn-logout" id="logoutBtn" data-i18n="nav.logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span data-i18n="nav.logout">Logout</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard" id="dashboardContent">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 data-i18n="dashboard.title">Welcome back!</h1>
+            <p id="dashboardSubtitle" data-i18n="dashboard.subtitle">Here's your learning progress overview.</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row" id="statsRow">
+            <!-- Band Estimate -->
+            <div class="stat-card band-card">
+                <div class="stat-label" data-i18n="dashboard.bandEstimate">Band Estimate</div>
+                <div class="band-gauge">
+                    <div class="gauge-ring">
+                        <svg viewBox="0 0 64 64">
+                            <circle class="gauge-bg" cx="32" cy="32" r="27"/>
+                            <circle class="gauge-fill" id="bandGaugeFill" cx="32" cy="32" r="27"
+                                stroke-dasharray="169.65"
+                                stroke-dashoffset="169.65"/>
+                        </svg>
+                        <div class="gauge-center" id="bandScore">
+                            <span class="skeleton skeleton-number" style="width:24px;height:24px;"></span>
+                        </div>
+                    </div>
+                    <div class="gauge-info">
+                        <div class="stat-value" id="bandLabel">
+                            <span class="skeleton skeleton-text" style="width:80px;"></span>
+                        </div>
+                        <div class="stat-sub" id="bandTarget" data-i18n="dashboard.bandTarget">
+                            <span class="skeleton skeleton-text" style="width:60px;height:0.7rem;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day Streak -->
+            <div class="stat-card streak-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                    </svg>
+                </div>
+                <div class="stat-label" data-i18n="dashboard.dayStreak">Day Streak</div>
+                <div class="stat-value" id="streakValue">
+                    <span class="skeleton skeleton-number"></span>
+                </div>
+                <div class="stat-sub" id="streakSub">
+                    <span class="skeleton skeleton-text" style="width:100px;height:0.7rem;"></span>
+                </div>
+            </div>
+
+            <!-- Daily Goal -->
+            <div class="stat-card goal-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                </div>
+                <div class="stat-label" data-i18n="dashboard.dailyGoal">Daily Goal</div>
+                <div class="stat-value" id="goalValue">
+                    <span class="skeleton skeleton-number"></span>
+                </div>
+                <div class="goal-progress">
+                    <div class="goal-bar-track">
+                        <div class="goal-bar-fill" id="goalBarFill" style="width: 0%"></div>
+                    </div>
+                    <div class="goal-bar-label">
+                        <span id="goalCurrent">
+                            <span class="skeleton skeleton-text" style="width:30px;height:0.65rem;display:inline-block;"></span>
+                        </span>
+                        <span id="goalTarget">
+                            <span class="skeleton skeleton-text" style="width:40px;height:0.65rem;display:inline-block;"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total XP -->
+            <div class="stat-card xp-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </div>
+                <div class="stat-label" data-i18n="dashboard.totalXP">Total XP</div>
+                <div class="stat-value" id="totalXPValue">
+                    <span class="skeleton skeleton-number"></span>
+                </div>
+                <div class="stat-sub" id="totalXPSub">
+                    <span class="skeleton skeleton-text" style="width:90px;height:0.7rem;"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skill Progress Section -->
+        <div class="skills-section">
+            <h2 class="section-title" data-i18n="dashboard.skillProgress">Skill Progress</h2>
+            <div class="skills-grid" id="skillsGrid">
+                <!-- Listening -->
+                <div class="skill-card listening">
+                    <div class="skill-header">
+                        <div class="skill-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="skill-name" data-i18n="dashboard.skill.listening">Listening</div>
+                            <div class="skill-band" id="listeningBand">
+                                <span class="skeleton skeleton-text" style="width:50px;height:0.65rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-header">
+                            <span data-i18n="dashboard.progress">Progress</span>
+                            <span id="listeningPercent"><span class="skeleton" style="width:28px;height:0.65rem;display:inline-block;"></span></span>
+                        </div>
+                        <div class="skill-bar-track">
+                            <div class="skill-bar-fill" id="listeningBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="skill-lessons" id="listeningLessons">
+                        <span class="skeleton skeleton-text" style="width:100px;height:0.65rem;"></span>
+                    </div>
+                </div>
+
+                <!-- Reading -->
+                <div class="skill-card reading">
+                    <div class="skill-header">
+                        <div class="skill-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="skill-name" data-i18n="dashboard.skill.reading">Reading</div>
+                            <div class="skill-band" id="readingBand">
+                                <span class="skeleton skeleton-text" style="width:50px;height:0.65rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-header">
+                            <span data-i18n="dashboard.progress">Progress</span>
+                            <span id="readingPercent"><span class="skeleton" style="width:28px;height:0.65rem;display:inline-block;"></span></span>
+                        </div>
+                        <div class="skill-bar-track">
+                            <div class="skill-bar-fill" id="readingBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="skill-lessons" id="readingLessons">
+                        <span class="skeleton skeleton-text" style="width:100px;height:0.65rem;"></span>
+                    </div>
+                </div>
+
+                <!-- Writing -->
+                <div class="skill-card writing">
+                    <div class="skill-header">
+                        <div class="skill-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                <path d="m15 5 4 4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="skill-name" data-i18n="dashboard.skill.writing">Writing</div>
+                            <div class="skill-band" id="writingBand">
+                                <span class="skeleton skeleton-text" style="width:50px;height:0.65rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-header">
+                            <span data-i18n="dashboard.progress">Progress</span>
+                            <span id="writingPercent"><span class="skeleton" style="width:28px;height:0.65rem;display:inline-block;"></span></span>
+                        </div>
+                        <div class="skill-bar-track">
+                            <div class="skill-bar-fill" id="writingBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="skill-lessons" id="writingLessons">
+                        <span class="skeleton skeleton-text" style="width:100px;height:0.65rem;"></span>
+                    </div>
+                </div>
+
+                <!-- Speaking -->
+                <div class="skill-card speaking">
+                    <div class="skill-header">
+                        <div class="skill-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="22"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="skill-name" data-i18n="dashboard.skill.speaking">Speaking</div>
+                            <div class="skill-band" id="speakingBand">
+                                <span class="skeleton skeleton-text" style="width:50px;height:0.65rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-header">
+                            <span data-i18n="dashboard.progress">Progress</span>
+                            <span id="speakingPercent"><span class="skeleton" style="width:28px;height:0.65rem;display:inline-block;"></span></span>
+                        </div>
+                        <div class="skill-bar-track">
+                            <div class="skill-bar-fill" id="speakingBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="skill-lessons" id="speakingLessons">
+                        <span class="skeleton skeleton-text" style="width:100px;height:0.65rem;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Row: Activity Chart + Quick Actions -->
+        <div class="bottom-row">
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <h2 class="section-title" data-i18n="dashboard.recentActivity">Recent Activity</h2>
+                <div class="activity-card">
+                    <div class="chart-container" id="activityChart">
+                        <div class="chart-y-axis" id="chartYAxis">
+                            <span class="chart-y-label">--</span>
+                            <span class="chart-y-label">--</span>
+                            <span class="chart-y-label">--</span>
+                            <span class="chart-y-label">0</span>
+                        </div>
+                        <div class="chart-bars-area">
+                            <div class="chart-grid">
+                                <div class="chart-gridlines">
+                                    <div class="chart-gridline"></div>
+                                    <div class="chart-gridline"></div>
+                                    <div class="chart-gridline"></div>
+                                    <div class="chart-gridline"></div>
+                                </div>
+                                <div class="chart-bars" id="chartBars">
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:40%;"></div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:60%;"></div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:30%;"></div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:80%;"></div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:50%;"></div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:70%;"></div></div>
+                                    <div class="chart-bar-wrapper"><div class="chart-bar skeleton" style="height:45%;"></div></div>
+                                </div>
+                            </div>
+                            <div class="chart-x-labels" id="chartXLabels">
+                                <span class="chart-x-label">--</span>
+                                <span class="chart-x-label">--</span>
+                                <span class="chart-x-label">--</span>
+                                <span class="chart-x-label">--</span>
+                                <span class="chart-x-label">--</span>
+                                <span class="chart-x-label">--</span>
+                                <span class="chart-x-label today">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-section">
+                <h2 class="section-title" data-i18n="dashboard.quickActions">Quick Actions</h2>
+                <div class="quick-actions-card">
+                    <div class="quick-actions-list">
+                        <a href="/learn.html" class="btn-continue" id="btnContinue" data-i18n="dashboard.continueLearning">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                            <span data-i18n="dashboard.continueLearning">Continue Learning</span>
+                        </a>
+
+                        <a href="/learn.html?skill=listening" class="btn-secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-listening)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                            </svg>
+                            <span class="btn-secondary-text" data-i18n="dashboard.practiceListening">Practice Listening</span>
+                            <span class="btn-secondary-arrow">&rsaquo;</span>
+                        </a>
+
+                        <a href="/learn.html?skill=reading" class="btn-secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-reading)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                            <span class="btn-secondary-text" data-i18n="dashboard.practiceReading">Practice Reading</span>
+                            <span class="btn-secondary-arrow">&rsaquo;</span>
+                        </a>
+
+                        <a href="/learn.html?skill=writing" class="btn-secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-writing)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                <path d="m15 5 4 4"/>
+                            </svg>
+                            <span class="btn-secondary-text" data-i18n="dashboard.practiceWriting">Practice Writing</span>
+                            <span class="btn-secondary-arrow">&rsaquo;</span>
+                        </a>
+
+                        <a href="/learn.html?skill=speaking" class="btn-secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-speaking)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="22"/>
+                            </svg>
+                            <span class="btn-secondary-text" data-i18n="dashboard.practiceSpeaking">Practice Speaking</span>
+                            <span class="btn-secondary-arrow">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="daily-tip" id="dailyTip">
+                        <div class="daily-tip-label" data-i18n="dashboard.tipLabel">Daily Tip</div>
+                        <div class="daily-tip-text" id="tipText" data-i18n="dashboard.tipDefault">
+                            <span class="skeleton skeleton-text" style="width:100%;"></span>
+                            <span class="skeleton skeleton-text" style="width:70%;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

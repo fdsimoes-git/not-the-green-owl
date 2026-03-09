@@ -1,0 +1,15 @@
+{
+  "appId": "com.notthegreenowl.app",
+  "appName": "Not The Green Owl",
+  "webDir": ".",
+  "server": {
+    "url": "https://localhost:443",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "android": {
+    "backgroundColor": "#0a0f1a"
+  }
+}

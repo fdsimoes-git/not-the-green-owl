@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Register - Not The Green Owl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 60px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 100px rgba(245, 158, 11, 0.35); }
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        :root {
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            --color-bg-deep: #0a0f1a;
+            --color-bg-base: #0f172a;
+            --color-bg-elevated: #1e293b;
+            --color-bg-surface: #334155;
+
+            --color-accent-primary: #f59e0b;
+            --color-accent-secondary: #fbbf24;
+            --color-accent-tertiary: #d97706;
+
+            --color-success: #10b981;
+            --color-success-muted: rgba(16, 185, 129, 0.15);
+            --color-danger: #ef4444;
+            --color-danger-muted: rgba(239, 68, 68, 0.15);
+
+            --color-text-primary: #f8fafc;
+            --color-text-secondary: #94a3b8;
+            --color-text-muted: #64748b;
+
+            --color-border: rgba(148, 163, 184, 0.15);
+
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.25s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg-deep);
+            margin: 0;
+            padding: 0;
+            padding-top: env(safe-area-inset-top, 0px);
+            min-height: calc(100vh - env(safe-area-inset-top, 0px));
+            display: flex;
+            justify-content: center;
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-y: auto;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Ambient background orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            top: -150px;
+            left: -100px;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+            bottom: -100px;
+            right: -100px;
+            animation: float 18s ease-in-out infinite reverse;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+            top: 60%;
+            left: 30%;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 460px;
+            padding: 2rem;
+            margin: auto 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-accent-primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: -0.03em;
+        }
+
+        .register-form {
+            background: var(--color-bg-elevated);
+            padding: 3rem 2.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--color-border);
+            text-align: center;
+            animation: fadeInUp 0.8s ease backwards, pulse-glow 4s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-success) 0%, var(--color-accent-primary) 50%, var(--color-accent-secondary) 100%);
+        }
+
+        .register-form h2 {
+            margin: 0 0 0.5rem 0;
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .register-form .subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: all var(--transition-base);
+            background: var(--color-bg-base);
+            color: var(--color-text-primary);
+        }
+
+        .form-group input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--color-accent-primary);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+            background: var(--color-bg-deep);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1.1rem;
+            background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-tertiary) 100%);
+            color: var(--color-bg-deep);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-family: var(--font-body);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow: 0 4px 24px rgba(245, 158, 11, 0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            background: var(--color-danger-muted);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--color-danger);
+            font-size: 0.875rem;
+            display: none;
+            text-align: left;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease-in-out, fadeInUp 0.3s ease;
+        }
+
+        .success-message {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: var(--color-success-muted);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--color-success);
+            font-size: 0.875rem;
+            display: none;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .success-message .checkmark {
+            display: inline-block;
+            width: 48px;
+            height: 48px;
+            background: var(--color-success);
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            position: relative;
+            animation: checkmark 0.5s ease 0.2s backwards;
+        }
+
+        .success-message .checkmark::after {
+            content: '';
+            position: absolute;
+            left: 17px;
+            top: 11px;
+            width: 12px;
+            height: 22px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Loading state */
+        button.loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+            opacity: 0.85;
+            cursor: not-allowed;
+        }
+
+        button.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-top: -10px;
+            margin-left: -10px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top: 2.5px solid var(--color-text-primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .login-link {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .login-link a {
+            color: var(--color-accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-fast);
+        }
+
+        .login-link a:hover {
+            color: var(--color-accent-secondary);
+            text-decoration: underline;
+        }
+
+        /* Decorative elements */
+        .decorative-line {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .decorative-line::before,
+        .decorative-line::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+        }
+
+        /* Password strength indicator */
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: var(--color-bg-surface);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all var(--transition-base);
+            border-radius: 2px;
+        }
+
+        .password-strength-bar.weak { width: 33%; background: var(--color-danger); }
+        .password-strength-bar.medium { width: 66%; background: var(--color-accent-primary); }
+        .password-strength-bar.strong { width: 100%; background: var(--color-success); }
+
+        /* PayPal Purchase Section */
+        .paypal-section {
+            display: none;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .paypal-section.visible {
+            display: block;
+        }
+
+        .paypal-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+            padding: 0.75rem 0;
+            user-select: none;
+            transition: color var(--transition-fast);
+        }
+
+        .paypal-toggle:hover {
+            color: var(--color-text-primary);
+        }
+
+        .paypal-toggle-arrow {
+            transition: transform var(--transition-base);
+            font-size: 0.7rem;
+        }
+
+        .paypal-toggle.open .paypal-toggle-arrow {
+            transform: rotate(90deg);
+        }
+
+        .paypal-body {
+            display: none;
+            padding: 1.25rem;
+            background: var(--color-bg-base);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            margin-top: 0.5rem;
+        }
+
+        .paypal-body.open {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .paypal-price {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .paypal-price strong {
+            color: var(--color-text-primary);
+            font-size: 1.1rem;
+        }
+
+        .paypal-btn-container {
+            min-height: 55px;
+        }
+
+        .paypal-success {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--color-success-muted);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--color-success);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .paypal-success.visible {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .paypal-success .paypal-checkmark {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: var(--color-success);
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+            position: relative;
+            animation: checkmark 0.5s ease 0.2s backwards;
+        }
+
+        .paypal-success .paypal-checkmark::after {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 7px;
+            width: 8px;
+            height: 16px;
+            border: solid white;
+            border-width: 0 2.5px 2.5px 0;
+            transform: rotate(45deg);
+        }
+
+        .paypal-error {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--color-danger-muted);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--color-danger);
+            font-size: 0.85rem;
+        }
+
+        .paypal-error.visible {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .lang-toggle {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 999;
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            background: var(--color-bg-elevated);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 50%;
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lang-toggle:hover {
+            background: var(--color-bg-surface);
+            border-color: var(--color-accent-primary);
+            color: var(--color-accent-primary);
+            transform: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.25rem;
+            }
+
+            .register-form {
+                padding: 2.5rem 1.75rem;
+            }
+
+            .register-form h2 {
+                font-size: 1.75rem;
+            }
+
+            .register-form button {
+                font-size: 0.8rem;
+                padding: 0.9rem;
+                letter-spacing: 0.04em;
+            }
+
+            .app-title {
+                font-size: 2rem;
+            }
+
+            .orb-1, .orb-2 {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="lang-toggle" data-i18n-title="lang.switch.title" onclick="setLang(getLang()==='en'?'pt':'en')" aria-label="Toggle language">🌐</button>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="container">
+        <h1 class="app-title" data-i18n="common.appName">Not The Green Owl</h1>
+        <div class="register-form">
+            <h2 data-i18n="register.title">Create Account</h2>
+            <p class="subtitle" data-i18n="register.subtitle">Start your IELTS journey today</p>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="username" data-i18n="common.username">Username</label>
+                    <input type="text" id="username" required minlength="3" maxlength="30"
+                           pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only"
+                           placeholder="Choose a username" data-i18n-placeholder="register.usernamePlaceholder">
+                    <small data-i18n="register.usernameHelp">3-30 characters, letters, numbers, and underscores</small>
+                </div>
+                <div class="form-group">
+                    <label for="email" data-i18n="common.email">Email</label>
+                    <input type="email" id="email" required
+                           placeholder="your@email.com" data-i18n-placeholder="register.emailPlaceholder">
+                    <small data-i18n="register.emailHelp">Used for password recovery</small>
+                </div>
+                <div class="form-group">
+                    <label for="password" data-i18n="common.password">Password</label>
+                    <input type="password" id="password" required minlength="8"
+                           placeholder="Create a strong password" data-i18n-placeholder="register.passwordPlaceholder">
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="passwordStrength"></div>
+                    </div>
+                    <small data-i18n="register.passwordHelp">Minimum 8 characters</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword" data-i18n="register.confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" required
+                           placeholder="Re-enter your password" data-i18n-placeholder="register.confirmPlaceholder">
+                </div>
+                <!-- PayPal Purchase Section -->
+                <div class="paypal-section" id="paypalSection">
+                    <div class="paypal-toggle" id="paypalToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="paypalBody">
+                        <span class="paypal-toggle-arrow">&#9654;</span>
+                        <span data-i18n="register.paypalToggle">Don't have an invite code? Buy one with Credit/Debit Card</span>
+                    </div>
+                    <div class="paypal-body" id="paypalBody">
+                        <p class="paypal-price"><span data-i18n="register.price">Price:</span> <strong>R$ <span id="paypalPrice">--</span></strong></p>
+                        <div class="paypal-btn-container" id="paypalButtonContainer"></div>
+                        <div class="paypal-success" id="paypalSuccess">
+                            <div class="paypal-checkmark"></div>
+                            <p style="margin: 0;" data-i18n="register.paymentConfirmed">Payment confirmed! Code auto-filled below.</p>
+                        </div>
+                        <div class="paypal-error" id="paypalError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inviteCode" data-i18n="register.inviteCode">Invite Code</label>
+                    <input type="text" id="inviteCode" required
+                           placeholder="Enter your invite code" data-i18n-placeholder="register.invitePlaceholder"
+                           maxlength="8"
+                           style="text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;">
+                    <small data-i18n="register.inviteHelp">Required. Ask an administrator for a code.</small>
+                </div>
+                <button type="submit" data-i18n="register.createAccount">Create Account</button>
+            </form>
+            <div class="decorative-line" data-i18n="common.or">or</div>
+            <p class="login-link"><span data-i18n="register.hasAccount">Already have an account?</span> <a href="/login.html" data-i18n="register.signIn">Sign in</a></p>
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message">
+                <div class="checkmark"></div>
+                <p style="margin: 0; font-weight: 600;" data-i18n="register.success">Account Created Successfully!</p>
+                <p style="margin: 0.5rem 0 0; opacity: 0.8;" data-i18n="register.redirecting">Redirecting to login...</p>
+            </div>
+        </div>
+    </div>
+    <script src="/js/i18n.js"></script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/register.js"></script>
+    <script>
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrength');
+
+            strengthBar.className = 'password-strength-bar';
+
+            if (password.length === 0) {
+                strengthBar.style.width = '0';
+            } else if (password.length < 8) {
+                strengthBar.classList.add('weak');
+            } else if (password.length < 12 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+                strengthBar.classList.add('medium');
+            } else {
+                strengthBar.classList.add('strong');
+            }
+        });
+    </script>
+</body>
+</html>

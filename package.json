@@ -1,0 +1,26 @@
+{
+  "name": "not-the-green-owl",
+  "version": "1.0.0",
+  "description": "IELTS-aligned English Learning Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:prod": "sudo node server.js",
+    "seed": "node db/seed.js",
+    "ssl": "mkdir -p ssl && openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ssl/server.key -out ssl/server.crt -subj '/C=US/ST=State/L=City/O=NotTheGreenOwl/CN=english.local'",
+    "hash-password": "node -e \"const bcrypt = require('bcryptjs'); const pw = process.argv[1]; bcrypt.hash(pw, 10).then(hash => console.log('ADMIN_PASSWORD_HASH=' + hash));\" "
+  },
+  "dependencies": {
+    "@paypal/paypal-server-sdk": "^2.0.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.17.3",
+    "helmet": "^7.1.0",
+    "nodemailer": "^8.0.1",
+    "otplib": "^13.3.0",
+    "pg": "^8.19.0",
+    "qrcode": "^1.5.4"
+  }
+}

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Login - Not The Green Owl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 60px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 100px rgba(245, 158, 11, 0.35); }
+        }
+
+        :root {
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            --color-bg-deep: #0a0f1a;
+            --color-bg-base: #0f172a;
+            --color-bg-elevated: #1e293b;
+            --color-bg-surface: #334155;
+
+            --color-accent-primary: #f59e0b;
+            --color-accent-secondary: #fbbf24;
+            --color-accent-tertiary: #d97706;
+
+            --color-success: #10b981;
+            --color-danger: #ef4444;
+            --color-danger-muted: rgba(239, 68, 68, 0.15);
+
+            --color-text-primary: #f8fafc;
+            --color-text-secondary: #94a3b8;
+            --color-text-muted: #64748b;
+
+            --color-border: rgba(148, 163, 184, 0.15);
+
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.25s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg-deep);
+            margin: 0;
+            padding: 0;
+            padding-top: env(safe-area-inset-top, 0px);
+            min-height: calc(100vh - env(safe-area-inset-top, 0px));
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-y: auto;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Ambient background orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+            top: -150px;
+            right: -100px;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            animation: float 18s ease-in-out infinite reverse;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float 12s ease-in-out infinite;
+        }
+
+        /* ── Landing Split Layout ── */
+        .landing-wrapper {
+            display: flex;
+            min-height: calc(100vh - env(safe-area-inset-top, 0px));
+            position: relative;
+            z-index: 1;
+        }
+
+        .landing-hero {
+            flex: 0 0 58%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease backwards;
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--color-accent-primary);
+            margin: 0 0 1rem 0;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .hero-tagline {
+            color: var(--color-text-secondary);
+            font-size: 1.15rem;
+            margin: 0 0 2.5rem 0;
+            line-height: 1.7;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            transition: all var(--transition-base);
+        }
+
+        .feature-card:hover {
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(245, 158, 11, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 0.75rem;
+            color: var(--color-accent-primary);
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin: 0 0 0.35rem 0;
+        }
+
+        .feature-card p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* ── Login Side ── */
+        .landing-login {
+            flex: 0 0 42%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-left: 1px solid var(--color-border);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-form {
+            background: var(--color-bg-elevated);
+            padding: 3rem 2.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--color-border);
+            text-align: center;
+            animation: fadeInUp 0.8s ease 0.15s backwards, pulse-glow 4s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-accent-primary) 0%, var(--color-accent-secondary) 50%, var(--color-accent-tertiary) 100%);
+        }
+
+        .login-form h2 {
+            margin: 0 0 0.5rem 0;
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .login-form .subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: all var(--transition-base);
+            background: var(--color-bg-base);
+            color: var(--color-text-primary);
+        }
+
+        .form-group input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--color-accent-primary);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+            background: var(--color-bg-deep);
+        }
+
+        button {
+            width: 100%;
+            padding: 1.1rem;
+            background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-tertiary) 100%);
+            color: var(--color-bg-deep);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-family: var(--font-body);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow: 0 4px 24px rgba(245, 158, 11, 0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            background: var(--color-danger-muted);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--color-danger);
+            font-size: 0.875rem;
+            display: none;
+            text-align: left;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease-in-out, fadeInUp 0.3s ease;
+        }
+
+        /* Loading state */
+        button.loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+            opacity: 0.85;
+            cursor: not-allowed;
+        }
+
+        button.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-top: -10px;
+            margin-left: -10px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top: 2.5px solid var(--color-text-primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .register-link {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .register-link a {
+            color: var(--color-accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-fast);
+        }
+
+        .register-link a:hover {
+            color: var(--color-accent-secondary);
+            text-decoration: underline;
+        }
+
+        /* Decorative elements */
+        .decorative-line {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .decorative-line::before,
+        .decorative-line::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .landing-wrapper {
+                flex-direction: column;
+            }
+
+            .landing-hero {
+                flex: none;
+                padding: 2.5rem 1.5rem 2rem;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-tagline {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .landing-login {
+                flex: none;
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                padding: 2rem 1.5rem 3rem;
+            }
+
+            .login-form {
+                padding: 2.5rem 1.75rem;
+            }
+
+            .login-form h2 {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .landing-hero {
+                padding: 2rem 1.25rem 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .landing-login {
+                padding: 1.5rem 1.25rem 2.5rem;
+            }
+
+            .login-form {
+                padding: 2rem 1.5rem;
+            }
+
+            .login-form button {
+                font-size: 0.8rem;
+                padding: 0.9rem;
+                letter-spacing: 0.04em;
+            }
+
+            .orb-1, .orb-2 {
+                opacity: 0.5;
+            }
+        }
+
+        .lang-toggle {
+            position: fixed;
+            bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+            right: 1.25rem;
+            z-index: 999;
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            background: var(--color-bg-elevated);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 50%;
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lang-toggle:hover {
+            background: var(--color-bg-surface);
+            border-color: var(--color-accent-primary);
+            color: var(--color-accent-primary);
+            transform: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+<body>
+    <button class="lang-toggle" data-i18n-title="lang.switch.title" onclick="setLang(getLang()==='en'?'pt':'en')" aria-label="Toggle language">🌐</button>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="landing-wrapper">
+        <!-- Hero / Features Side -->
+        <div class="landing-hero">
+            <div class="hero-content">
+                <h1 class="hero-title" data-i18n="login.title">Not The Green Owl</h1>
+                <p class="hero-tagline" data-i18n="login.heroTagline">Master English with confidence through IELTS-aligned lessons, smart exercises, and band score tracking designed to take you from beginner to fluent.</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.ielts">IELTS Aligned</h3>
+                        <p data-i18n="login.feature.ieltsDesc">Structured lessons based on band scoring 1-9</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M3 9h18"/>
+                            <path d="M3 15h18"/>
+                            <path d="M9 3v18"/>
+                            <path d="M15 3v18"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.coreSkills">4 Core Skills</h3>
+                        <p data-i18n="login.feature.coreSkillsDesc">Listening, Reading, Writing, Speaking modules</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <path d="M9 15l2 2 4-4"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.exercises">Smart Exercises</h3>
+                        <p data-i18n="login.feature.exercisesDesc">Multiple choice, fill-in, matching, ordering &amp; more</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v4"/>
+                            <path d="M12 18v4"/>
+                            <path d="M4.93 4.93l2.83 2.83"/>
+                            <path d="M16.24 16.24l2.83 2.83"/>
+                            <path d="M2 12h4"/>
+                            <path d="M18 12h4"/>
+                            <path d="M4.93 19.07l2.83-2.83"/>
+                            <path d="M16.24 7.76l2.83-2.83"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.streaks">Daily Streaks</h3>
+                        <p data-i18n="login.feature.streaksDesc">Build consistency with streak tracking &amp; daily goals</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.bandTracking">Band Tracking</h3>
+                        <p data-i18n="login.feature.bandTrackingDesc">Monitor your estimated IELTS band score</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="6"/>
+                            <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.achievements">Achievements</h3>
+                        <p data-i18n="login.feature.achievementsDesc">Unlock badges and earn bonus XP</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            <circle cx="12" cy="16" r="1"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.twoFactor">Two-Factor Auth (2FA)</h3>
+                        <p data-i18n="login.feature.twoFactorDesc">Protect your account with TOTP authenticator apps and backup codes</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <svg class="feature-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 20V10"/>
+                            <path d="M12 20V4"/>
+                            <path d="M6 20v-6"/>
+                        </svg>
+                        <h3 data-i18n="login.feature.leaderboard">Leaderboard</h3>
+                        <p data-i18n="login.feature.leaderboardDesc">Compete with other learners on weekly charts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Side -->
+        <div class="landing-login">
+            <div class="login-container">
+                <div class="login-form">
+                    <h2 data-i18n="login.welcome">Welcome Back</h2>
+                    <p class="subtitle" data-i18n="login.subtitle">Sign in to continue learning</p>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username" data-i18n="common.username">Username</label>
+                            <input type="text" id="username" placeholder="Enter your username" data-i18n-placeholder="login.usernamePlaceholder" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" data-i18n="common.password">Password</label>
+                            <input type="password" id="password" placeholder="Enter your password" data-i18n-placeholder="login.passwordPlaceholder" required>
+                        </div>
+                        <button type="submit" data-i18n="login.signIn">Sign In</button>
+                    </form>
+                    <p class="register-link" style="margin-top: 1.5rem;"><span data-i18n="login.forgotPassword">Forgot your password?</span> <a href="/forgot-password.html" data-i18n="login.resetIt">Reset it</a></p>
+                    <div class="decorative-line" data-i18n="common.or">or</div>
+                    <p class="register-link"><span data-i18n="login.noAccount">Don't have an account?</span> <a href="/register.html" data-i18n="login.createOne">Create one</a></p>
+                    <div id="error-message" class="error-message"></div>
+                </div>
+
+                <div id="twofa-step" class="login-form" style="display: none;">
+                    <h2 data-i18n="login.twoFAStep">Two-Factor Authentication</h2>
+                    <p class="subtitle" data-i18n="login.twoFAPrompt">Enter the code from your authenticator app</p>
+                    <div class="form-group">
+                        <label for="twofaCode" data-i18n="login.twoFACode">Verification Code</label>
+                        <input type="text" id="twofaCode" maxlength="8" placeholder="000000" data-i18n-placeholder="login.twoFAPlaceholder" autocomplete="one-time-code" required>
+                    </div>
+                    <small style="color: var(--color-text-muted); display: block; margin-bottom: 1rem; text-align: left;" data-i18n="login.twoFABackupHint">You can also use an 8-character backup code</small>
+                    <button type="button" id="verify2FABtn" data-i18n="login.verify">Verify</button>
+                    <p class="register-link" style="margin-top: 1.5rem;">
+                        <a href="#" id="backToLogin" data-i18n="login.backToLogin">Back to login</a>
+                    </p>
+                    <div id="twofa-error" class="error-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/i18n.js"></script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/login.js"></script>
+</body>
+</html>
