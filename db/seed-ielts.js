@@ -28,15 +28,17 @@ async function seedIELTS() {
             levels[r.skill_name][r.level_name] = r.id;
         }
 
-        // Delete existing placeholder lessons for intermediate+
-        for (const skill of ['reading', 'listening', 'writing', 'speaking']) {
+        // Guard lookups
+        for (const skill of ['reading', 'listening', 'practice', 'practice']) {
             for (const level of ['intermediate', 'upper_intermediate', 'advanced']) {
-                const levelId = levels[skill][level];
-                if (levelId) {
-                    // Delete exercises first (cascade), then lessons
-                    await client.query(`DELETE FROM exercises WHERE lesson_id IN (SELECT id FROM lessons WHERE level_id = $1)`, [levelId]);
-                    await client.query(`DELETE FROM lessons WHERE level_id = $1`, [levelId]);
+                const skillLevels = levels[skill];
+                if (!skillLevels || typeof skillLevels[level] === 'undefined') {
+                    throw new Error(`Missing level mapping for skill="${skill}", level="${level}".`);
                 }
+                const levelId = skillLevels[level];
+                
+                await client.query(`DELETE FROM exercises WHERE lesson_id IN (SELECT id FROM lessons WHERE level_id = $1)`, [levelId]);
+                await client.query(`DELETE FROM lessons WHERE level_id = $1`, [levelId]);
             }
         }
 
@@ -47,7 +49,9 @@ async function seedIELTS() {
         const riLevel = levels.reading.intermediate;
 
         // Lesson 1: Fire & Technology passage (inspired by Cambridge Test 1)
-        await createLesson(client, riLevel, 1, 'A Spark, a Flint: History of Fire', 'reading_comprehension', 20, 30, [
+        // Change all lesson types in the calls to 'practice' per schema constraint
+    // (Used 'practice' for consistency with schema constraint 'practice','quiz','review')
+    await createLesson(client, riLevel, 1, 'A Spark, a Flint: History of Fire', 'practice', 20, 30, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -91,7 +95,7 @@ async function seedIELTS() {
         ]);
 
         // Lesson 2: Matches History
-        await createLesson(client, riLevel, 2, 'The Invention of Matches', 'reading_comprehension', 20, 30, [
+        await createLesson(client, riLevel, 2, 'The Invention of Matches', 'practice', 20, 30, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -133,7 +137,7 @@ async function seedIELTS() {
         ]);
 
         // Lesson 3: Zoo Conservation
-        await createLesson(client, riLevel, 3, 'Zoo Conservation Programmes', 'reading_comprehension', 20, 35, [
+        await createLesson(client, riLevel, 3, 'Zoo Conservation Programmes', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -185,7 +189,7 @@ async function seedIELTS() {
 
         const ruLevel = levels.reading.upper_intermediate;
 
-        await createLesson(client, ruLevel, 1, 'Heading Matching: Architecture', 'reading_comprehension', 20, 35, [
+        await createLesson(client, ruLevel, 1, 'Heading Matching: Architecture', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -226,13 +230,13 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, ruLevel, 2, 'Summary Completion: Language Research', 'reading_comprehension', 20, 35, [
+        await createLesson(client, ruLevel, 2, 'Summary Completion: Language Research', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
-                    passage: 'The Spoken Corpus project at the University of Nottingham has been collecting samples of everyday English conversation for over a decade. Unlike written language, spoken English is full of incomplete sentences, false starts, repetitions, and fillers such as "um" and "er". Researchers discovered that spoken grammar often differs significantly from written grammar.\n\nOne surprising finding was that speakers rarely use the passive voice in conversation. While academic writing frequently employs constructions like "the experiment was conducted", everyday speech prefers active forms: "we did the experiment". Similarly, spoken English makes far greater use of vague language — expressions like "sort of", "kind of", and "stuff like that" appear constantly.\n\nThe researchers also found that certain words are far more common in speech than in writing. The word "just" appears in spoken English roughly 15 times more frequently than in written texts. Modal verbs like "would" and "could" are also used differently — in speech, they often serve as hedging devices rather than indicating conditionality.',
+                    passage: 'The Spoken Corpus project at the University of Nottingham has been collecting samples of everyday English conversation for over a decade. Unlike written language, spoken English is full of incomplete sentences, false starts, repetitions, and fillers such as "um" and "er". Researchers discovered that spoken grammar often differs significantly from written grammar.\n\nOne surprising finding was that speakers rarely use the passive voice in conversation. While academic practice frequently employs constructions like "the experiment was conducted", everyday speech prefers active forms: "we did the experiment". Similarly, spoken English makes far greater use of vague language — expressions like "sort of", "kind of", and "stuff like that" appear constantly.\n\nThe researchers also found that certain words are far more common in speech than in practice. The word "just" appears in spoken English roughly 15 times more frequently than in written texts. Modal verbs like "would" and "could" are also used differently — in speech, they often serve as hedging devices rather than indicating conditionality.',
                     question: 'What is surprising about the passive voice in spoken English?',
-                    options: ['It is used more than in writing', 'It is rarely used', 'It is used incorrectly', 'It is only used formally']
+                    options: ['It is used more than in practice', 'It is rarely used', 'It is used incorrectly', 'It is only used formally']
                 },
                 answer: 'It is rarely used',
                 explanation: '"Speakers rarely use the passive voice in conversation."'
@@ -266,7 +270,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, ruLevel, 3, 'Yes/No/Not Given: Tourism', 'reading_comprehension', 20, 35, [
+        await createLesson(client, ruLevel, 3, 'Yes/No/Not Given: Tourism', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -312,7 +316,7 @@ async function seedIELTS() {
 
         const raLevel = levels.reading.advanced;
 
-        await createLesson(client, raLevel, 1, 'Complex Arguments: Biodiversity', 'reading_comprehension', 25, 40, [
+        await createLesson(client, raLevel, 1, 'Complex Arguments: Biodiversity', 'practice', 25, 40, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -362,7 +366,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, raLevel, 2, 'Inference Tasks: Glass Technology', 'reading_comprehension', 25, 40, [
+        await createLesson(client, raLevel, 2, 'Inference Tasks: Glass Technology', 'practice', 25, 40, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -412,7 +416,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, raLevel, 3, 'Synthesis: Conservation Debate', 'reading_comprehension', 25, 40, [
+        await createLesson(client, raLevel, 3, 'Synthesis: Conservation Debate', 'practice', 25, 40, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -474,7 +478,7 @@ async function seedIELTS() {
 
         const liLevel = levels.listening.intermediate;
 
-        await createLesson(client, liLevel, 1, 'Form Completion: Lost Property', 'listening_comprehension', 15, 25, [
+        await createLesson(client, liLevel, 1, 'Form Completion: Lost Property', 'practice', 15, 25, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -514,7 +518,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, liLevel, 2, 'Multiple Choice: News Report', 'listening_comprehension', 15, 25, [
+        await createLesson(client, liLevel, 2, 'Multiple Choice: News Report', 'practice', 15, 25, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -545,7 +549,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, liLevel, 3, 'Note Completion: University Orientation', 'listening_comprehension', 15, 30, [
+        await createLesson(client, liLevel, 3, 'Note Completion: University Orientation', 'practice', 15, 30, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -597,7 +601,7 @@ async function seedIELTS() {
 
         const luLevel = levels.listening.upper_intermediate;
 
-        await createLesson(client, luLevel, 1, 'Lecture: Faculty Structure', 'listening_comprehension', 20, 35, [
+        await createLesson(client, luLevel, 1, 'Lecture: Faculty Structure', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -631,11 +635,11 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, luLevel, 2, 'Discussion: Plagiarism & Academic Writing', 'listening_comprehension', 20, 35, [
+        await createLesson(client, luLevel, 2, 'Discussion: Plagiarism & Academic Writing', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
-                    passage: 'Academic Skills Talk:\n"A tutorial provides a chance to share views with other students. It\'s not just a small lecture — it\'s interactive. When writing essays, I advise you to research your work well and always name the books you have read. This is called referencing.\n\nI must stress that plagiarism — presenting someone else\'s work as your own — is a serious offence. The university treats it very seriously and penalties can include failing the course or even expulsion. If you\'re unsure about how to reference properly, please ask."',
+                    passage: 'Academic Skills Talk:\n"A tutorial provides a chance to share views with other students. It\'s not just a small lecture — it\'s interactive. When practice essays, I advise you to research your work well and always name the books you have read. This is called referencing.\n\nI must stress that plagiarism — presenting someone else\'s work as your own — is a serious offence. The university treats it very seriously and penalties can include failing the course or even expulsion. If you\'re unsure about how to reference properly, please ask."',
                     question: 'According to the speaker, a tutorial is:',
                     options: ['A type of lecture', 'Less important than a lecture', 'A chance to share views', 'An alternative to group work']
                 },
@@ -657,7 +661,7 @@ async function seedIELTS() {
             {
                 type: 'multiple_choice', points: 3,
                 question: {
-                    question: 'What does the speaker advise students to do when writing essays?',
+                    question: 'What does the speaker advise students to do when practice essays?',
                     options: ['Share work with friends', 'Avoid using other writers\' ideas', 'Research well and name sources', 'Write from memory only']
                 },
                 answer: 'Research well and name sources',
@@ -665,7 +669,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, luLevel, 3, 'Summary: Environmental Discussion', 'listening_comprehension', 20, 35, [
+        await createLesson(client, luLevel, 3, 'Summary: Environmental Discussion', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 3,
                 question: {
@@ -708,14 +712,14 @@ async function seedIELTS() {
         // WRITING — INTERMEDIATE
         // ═══════════════════════════════════════════════════════════
 
-        const wiLevel = levels.writing.intermediate;
+        const wiLevel = levels.practice.intermediate;
 
-        await createLesson(client, wiLevel, 1, 'IELTS Letter Writing', 'writing', 20, 30, [
+        await createLesson(client, wiLevel, 1, 'IELTS Letter Writing', 'practice', 20, 30, [
             {
                 type: 'essay_prompt', points: 8,
                 question: {
                     topic: 'You recently bought a product online and it arrived damaged. Write a letter to the company. In your letter:\n- describe what you ordered\n- explain the problem\n- say what you would like them to do\n\nWrite at least 150 words.',
-                    modelAnswer: 'Dear Sir or Madam,\n\nI am writing to complain about a product I recently purchased from your online store. On 15th February, I ordered a ceramic table lamp (Order No. 4827), which was delivered on 20th February.\n\nUnfortunately, when I opened the package, I discovered that the lampshade was cracked and the base had a large chip on one side. It appears that the item was not adequately packed, as there was very little protective material inside the box.\n\nI would appreciate it if you could either send a replacement lamp or issue a full refund to my original payment method. I have kept the damaged item and the original packaging should you need them for inspection.\n\nI look forward to hearing from you within the next seven days.\n\nYours faithfully,\nJohn Smith'
+                    modelAnswer: 'Dear Sir or Madam,\n\nI am practice to complain about a product I recently purchased from your online store. On 15th February, I ordered a ceramic table lamp (Order No. 4827), which was delivered on 20th February.\n\nUnfortunately, when I opened the package, I discovered that the lampshade was cracked and the base had a large chip on one side. It appears that the item was not adequately packed, as there was very little protective material inside the box.\n\nI would appreciate it if you could either send a replacement lamp or issue a full refund to my original payment method. I have kept the damaged item and the original packaging should you need them for inspection.\n\nI look forward to hearing from you within the next seven days.\n\nYours faithfully,\nJohn Smith'
                 },
                 answer: null,
                 explanation: 'A good complaint letter is polite but firm, describes the problem clearly, and states what action you want.'
@@ -739,7 +743,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, wiLevel, 2, 'Graph Description: Task 1', 'writing', 20, 30, [
+        await createLesson(client, wiLevel, 2, 'Graph Description: Task 1', 'practice', 20, 30, [
             {
                 type: 'essay_prompt', points: 8,
                 question: {
@@ -759,7 +763,7 @@ async function seedIELTS() {
                 '21% × 3 = 63%, so 59% is close to tripling.'),
         ]);
 
-        await createLesson(client, wiLevel, 3, 'Opinion Essay: Task 2', 'writing', 25, 35, [
+        await createLesson(client, wiLevel, 3, 'Opinion Essay: Task 2', 'practice', 25, 35, [
             {
                 type: 'essay_prompt', points: 10,
                 question: {
@@ -788,11 +792,11 @@ async function seedIELTS() {
         // SPEAKING — INTERMEDIATE
         // ═══════════════════════════════════════════════════════════
 
-        const siLevel = levels.speaking.intermediate;
+        const siLevel = levels.practice.intermediate;
 
-        await createLesson(client, siLevel, 1, 'Part 1: Work & Study', 'speaking', 15, 25, [
+        await createLesson(client, siLevel, 1, 'Part 1: Work & Study', 'practice', 15, 25, [
             {
-                type: 'speaking_prompt', points: 5,
+                type: 'practice_prompt', points: 5,
                 question: {
                     question: 'Answer the following Part 1 questions (1-2 minutes total):\n1. Do you work or are you a student?\n2. What do you like about your work/studies?\n3. What would you change about your job/course if you could?\n4. Do you think you will continue in this field in the future?',
                     prepTime: 15,
@@ -809,9 +813,9 @@ async function seedIELTS() {
                 'Part 1 answers should be brief — about 2-3 sentences each.'),
         ]);
 
-        await createLesson(client, siLevel, 2, 'Part 2: Describe a Place', 'speaking', 15, 30, [
+        await createLesson(client, siLevel, 2, 'Part 2: Describe a Place', 'practice', 15, 30, [
             {
-                type: 'speaking_prompt', points: 8,
+                type: 'practice_prompt', points: 8,
                 question: {
                     question: 'Cue Card:\nDescribe a place you have visited that you particularly liked.\n\nYou should say:\n- where it is\n- when you went there\n- what you did there\n- and explain why you liked it.\n\nYou have 1 minute to prepare. Then speak for 1-2 minutes.',
                     prepTime: 60,
@@ -835,9 +839,9 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, siLevel, 3, 'Part 3: Abstract Discussion', 'speaking', 15, 30, [
+        await createLesson(client, siLevel, 3, 'Part 3: Abstract Discussion', 'practice', 15, 30, [
             {
-                type: 'speaking_prompt', points: 8,
+                type: 'practice_prompt', points: 8,
                 question: {
                     question: 'Part 3 Discussion Questions (following a Part 2 about "a place you visited"):\n\n1. Why do you think people like to travel to different places?\n2. Do you think tourism has a positive or negative impact on local communities?\n3. How has technology changed the way people travel?\n4. Do you think international travel will increase or decrease in the future? Why?',
                     prepTime: 15,
@@ -861,9 +865,9 @@ async function seedIELTS() {
         // ═══════════════════════════════════════════════════════════
 
         // WRITING UPPER-INTERMEDIATE
-        const wuLevel = levels.writing.upper_intermediate;
+        const wuLevel = levels.practice.upper_intermediate;
 
-        await createLesson(client, wuLevel, 1, 'Task 1: Process Diagram', 'writing', 20, 35, [
+        await createLesson(client, wuLevel, 1, 'Task 1: Process Diagram', 'practice', 20, 35, [
             {
                 type: 'essay_prompt', points: 10,
                 question: {
@@ -879,7 +883,7 @@ async function seedIELTS() {
                 'Process descriptions in IELTS typically use the passive voice.'),
         ]);
 
-        await createLesson(client, wuLevel, 2, 'Task 2: Problem-Solution Essay', 'writing', 25, 40, [
+        await createLesson(client, wuLevel, 2, 'Task 2: Problem-Solution Essay', 'practice', 25, 40, [
             {
                 type: 'essay_prompt', points: 10,
                 question: {
@@ -895,7 +899,7 @@ async function seedIELTS() {
                 'This structure is clear, formal, and confident.'),
         ]);
 
-        await createLesson(client, wuLevel, 3, 'Task 2: Agree/Disagree Essay', 'writing', 25, 40, [
+        await createLesson(client, wuLevel, 3, 'Task 2: Agree/Disagree Essay', 'practice', 25, 40, [
             {
                 type: 'essay_prompt', points: 10,
                 question: {
@@ -912,11 +916,11 @@ async function seedIELTS() {
         ]);
 
         // SPEAKING UPPER-INTERMEDIATE & ADVANCED
-        const suLevel = levels.speaking.upper_intermediate;
+        const suLevel = levels.practice.upper_intermediate;
 
-        await createLesson(client, suLevel, 1, 'Extended Part 2: Describe an Achievement', 'speaking', 20, 30, [
+        await createLesson(client, suLevel, 1, 'Extended Part 2: Describe an Achievement', 'practice', 20, 30, [
             {
-                type: 'speaking_prompt', points: 8,
+                type: 'practice_prompt', points: 8,
                 question: {
                     question: 'Cue Card:\nDescribe something you did that was successful.\n\nYou should say:\n- what it was\n- when you did it\n- how you prepared for it\n- and explain why you consider it successful.\n\nSpeak for 1-2 minutes.',
                     prepTime: 60,
@@ -933,9 +937,9 @@ async function seedIELTS() {
                 'Strong adjectives show vocabulary range in IELTS Speaking.'),
         ]);
 
-        await createLesson(client, suLevel, 2, 'Part 3: Education & Technology', 'speaking', 20, 35, [
+        await createLesson(client, suLevel, 2, 'Part 3: Education & Technology', 'practice', 20, 35, [
             {
-                type: 'speaking_prompt', points: 10,
+                type: 'practice_prompt', points: 10,
                 question: {
                     question: 'Part 3 Discussion:\n1. How has technology changed education in your country?\n2. Do you think online learning can replace traditional classrooms? Why or why not?\n3. What are the advantages and disadvantages of children using technology from a young age?\n4. How might education change in the next 20 years?',
                     prepTime: 15,
@@ -950,9 +954,9 @@ async function seedIELTS() {
                 'Hedging shows sophistication and intellectual honesty.'),
         ]);
 
-        await createLesson(client, suLevel, 3, 'Part 3: Society & Change', 'speaking', 20, 35, [
+        await createLesson(client, suLevel, 3, 'Part 3: Society & Change', 'practice', 20, 35, [
             {
-                type: 'speaking_prompt', points: 10,
+                type: 'practice_prompt', points: 10,
                 question: {
                     question: 'Part 3 Discussion:\n1. In what ways has life changed in your country compared to 50 years ago?\n2. Do you think these changes are mostly positive or negative?\n3. What role should governments play in managing social change?\n4. Is it possible for a society to modernise without losing its cultural identity?',
                     prepTime: 15,
@@ -970,7 +974,7 @@ async function seedIELTS() {
         // LISTENING & SPEAKING ADVANCED — Additional depth
         const laLevel = levels.listening.advanced;
 
-        await createLesson(client, laLevel, 1, 'Academic Lecture: Research Methods', 'listening_comprehension', 25, 40, [
+        await createLesson(client, laLevel, 1, 'Academic Lecture: Research Methods', 'practice', 25, 40, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -1006,7 +1010,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, laLevel, 2, 'Complex Dialogue: Academic Advising', 'listening_comprehension', 20, 35, [
+        await createLesson(client, laLevel, 2, 'Complex Dialogue: Academic Advising', 'practice', 20, 35, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -1036,7 +1040,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, laLevel, 3, 'Inference: Panel on AI Ethics', 'listening_comprehension', 25, 40, [
+        await createLesson(client, laLevel, 3, 'Inference: Panel on AI Ethics', 'practice', 25, 40, [
             {
                 type: 'multiple_choice', points: 4,
                 question: {
@@ -1081,9 +1085,9 @@ async function seedIELTS() {
         ]);
 
         // WRITING & SPEAKING ADVANCED
-        const waLevel = levels.writing.advanced;
+        const waLevel = levels.practice.advanced;
 
-        await createLesson(client, waLevel, 1, 'Academic Report: Comparing Data', 'writing', 25, 40, [
+        await createLesson(client, waLevel, 1, 'Academic Report: Comparing Data', 'practice', 25, 40, [
             {
                 type: 'essay_prompt', points: 12,
                 question: {
@@ -1095,7 +1099,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, waLevel, 2, 'Discursive Essay: Globalisation', 'writing', 30, 45, [
+        await createLesson(client, waLevel, 2, 'Discursive Essay: Globalisation', 'practice', 30, 45, [
             {
                 type: 'essay_prompt', points: 12,
                 question: {
@@ -1107,7 +1111,7 @@ async function seedIELTS() {
             },
         ]);
 
-        await createLesson(client, waLevel, 3, 'Evaluative Essay: Technology & Privacy', 'writing', 30, 45, [
+        await createLesson(client, waLevel, 3, 'Evaluative Essay: Technology & Privacy', 'practice', 30, 45, [
             {
                 type: 'essay_prompt', points: 12,
                 question: {
@@ -1120,11 +1124,11 @@ async function seedIELTS() {
         ]);
 
         // SPEAKING ADVANCED
-        const saLevel = levels.speaking.advanced;
+        const saLevel = levels.practice.advanced;
 
-        await createLesson(client, saLevel, 1, 'Complex Cue Card: Hypothetical Scenario', 'speaking', 20, 40, [
+        await createLesson(client, saLevel, 1, 'Complex Cue Card: Hypothetical Scenario', 'practice', 20, 40, [
             {
-                type: 'speaking_prompt', points: 10,
+                type: 'practice_prompt', points: 10,
                 question: {
                     question: 'Cue Card:\nDescribe a situation where you had to make a difficult decision.\n\nYou should say:\n- what the situation was\n- what options you had\n- what you decided to do\n- and explain whether you think you made the right decision.\n\nSpeak for 2 minutes.',
                     prepTime: 60,
@@ -1139,9 +1143,9 @@ async function seedIELTS() {
                 'Third conditional + inversion demonstrates high-level grammatical control.'),
         ]);
 
-        await createLesson(client, saLevel, 2, 'Part 3: Philosophical Discussion', 'speaking', 25, 45, [
+        await createLesson(client, saLevel, 2, 'Part 3: Philosophical Discussion', 'practice', 25, 45, [
             {
-                type: 'speaking_prompt', points: 12,
+                type: 'practice_prompt', points: 12,
                 question: {
                     question: 'Part 3 Questions:\n1. Do you think happiness is something people can learn, or is it innate?\n2. To what extent should governments be responsible for their citizens\' wellbeing?\n3. Some people argue that material wealth is necessary for happiness. Do you agree?\n4. How do cultural values influence what people consider a "good life"?',
                     prepTime: 15,
@@ -1161,9 +1165,9 @@ async function seedIELTS() {
                 'This answer defines terms, makes distinctions, and demonstrates analytical thinking.'),
         ]);
 
-        await createLesson(client, saLevel, 3, 'Full Mock Interview', 'speaking', 30, 50, [
+        await createLesson(client, saLevel, 3, 'Full Mock Interview', 'practice', 30, 50, [
             {
-                type: 'speaking_prompt', points: 5,
+                type: 'practice_prompt', points: 5,
                 question: {
                     question: 'PART 1 (4-5 minutes):\nAnswer these questions naturally:\n1. What area do you live in?\n2. What do you like about it?\n3. Do you read much? What kind of things?\n4. Do you prefer reading paper books or e-books? Why?',
                     prepTime: 0,
@@ -1173,7 +1177,7 @@ async function seedIELTS() {
                 explanation: 'Part 1: Give concise but extended answers. Don\'t overthink.'
             },
             {
-                type: 'speaking_prompt', points: 10,
+                type: 'practice_prompt', points: 10,
                 question: {
                     question: 'PART 2 (3-4 minutes):\nDescribe a time when you helped someone.\n\nYou should say:\n- who you helped\n- what the situation was\n- what you did\n- and explain how you felt about helping this person.\n\n1 minute preparation, then speak for 2 minutes.',
                     prepTime: 60,
@@ -1183,7 +1187,7 @@ async function seedIELTS() {
                 explanation: 'Part 2: Tell a complete story with a beginning, middle, and end. Include feelings.'
             },
             {
-                type: 'speaking_prompt', points: 10,
+                type: 'practice_prompt', points: 10,
                 question: {
                     question: 'PART 3 (4-5 minutes):\n1. Is it important for people to help each other in modern society?\n2. Do you think people are more or less willing to help strangers compared to the past?\n3. Should helping others be taught in schools? How?\n4. What motivates people to volunteer — altruism or self-interest?',
                     prepTime: 0,
@@ -1245,9 +1249,9 @@ async function createLesson(client, levelId, orderIndex, title, lessonType, dura
     for (let i = 0; i < exercises.length; i++) {
         const ex = exercises[i];
         await client.query(
-            `INSERT INTO exercises (lesson_id, exercise_type, question_json, answer_json, points, sort_order)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
-            [lessonId, ex.type, JSON.stringify(ex.question), JSON.stringify(ex.answer), ex.points, i + 1]
+            `INSERT INTO exercises (lesson_id, exercise_type, question_json, answer_json, points, sort_order, explanation)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [lessonId, ex.type, JSON.stringify(ex.question), JSON.stringify(ex.answer), ex.points, i + 1, ex.explanation || null]
         );
     }
     return lessonId;
