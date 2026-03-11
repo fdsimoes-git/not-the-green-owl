@@ -29,7 +29,7 @@ async function seedIELTS() {
         }
 
         // Guard lookups
-        for (const skill of ['reading', 'listening', 'practice', 'practice']) {
+        for (const skill of ['reading', 'listening', 'writing', 'speaking']) {
             for (const level of ['intermediate', 'upper_intermediate', 'advanced']) {
                 const skillLevels = levels[skill];
                 if (!skillLevels || typeof skillLevels[level] === 'undefined') {
@@ -712,14 +712,14 @@ async function seedIELTS() {
         // WRITING — INTERMEDIATE
         // ═══════════════════════════════════════════════════════════
 
-        const wiLevel = levels.practice.intermediate;
+        const wiLevel = levels.writing.intermediate;
 
         await createLesson(client, wiLevel, 1, 'IELTS Letter Writing', 'practice', 20, 30, [
             {
                 type: 'essay_prompt', points: 8,
                 question: {
                     topic: 'You recently bought a product online and it arrived damaged. Write a letter to the company. In your letter:\n- describe what you ordered\n- explain the problem\n- say what you would like them to do\n\nWrite at least 150 words.',
-                    modelAnswer: 'Dear Sir or Madam,\n\nI am practice to complain about a product I recently purchased from your online store. On 15th February, I ordered a ceramic table lamp (Order No. 4827), which was delivered on 20th February.\n\nUnfortunately, when I opened the package, I discovered that the lampshade was cracked and the base had a large chip on one side. It appears that the item was not adequately packed, as there was very little protective material inside the box.\n\nI would appreciate it if you could either send a replacement lamp or issue a full refund to my original payment method. I have kept the damaged item and the original packaging should you need them for inspection.\n\nI look forward to hearing from you within the next seven days.\n\nYours faithfully,\nJohn Smith'
+                    modelAnswer: 'Dear Sir or Madam,\n\nI am writing to complain about a product I recently purchased from your online store. On 15th February, I ordered a ceramic table lamp (Order No. 4827), which was delivered on 20th February.\n\nUnfortunately, when I opened the package, I discovered that the lampshade was cracked and the base had a large chip on one side. It appears that the item was not adequately packed, as there was very little protective material inside the box.\n\nI would appreciate it if you could either send a replacement lamp or issue a full refund to my original payment method. I have kept the damaged item and the original packaging should you need them for inspection.\n\nI look forward to hearing from you within the next seven days.\n\nYours faithfully,\nJohn Smith'
                 },
                 answer: null,
                 explanation: 'A good complaint letter is polite but firm, describes the problem clearly, and states what action you want.'
@@ -792,11 +792,11 @@ async function seedIELTS() {
         // SPEAKING — INTERMEDIATE
         // ═══════════════════════════════════════════════════════════
 
-        const siLevel = levels.practice.intermediate;
+        const siLevel = levels.speaking.intermediate;
 
         await createLesson(client, siLevel, 1, 'Part 1: Work & Study', 'practice', 15, 25, [
             {
-                type: 'practice_prompt', points: 5,
+                type: 'speaking_prompt', points: 5,
                 question: {
                     question: 'Answer the following Part 1 questions (1-2 minutes total):\n1. Do you work or are you a student?\n2. What do you like about your work/studies?\n3. What would you change about your job/course if you could?\n4. Do you think you will continue in this field in the future?',
                     prepTime: 15,
@@ -815,7 +815,7 @@ async function seedIELTS() {
 
         await createLesson(client, siLevel, 2, 'Part 2: Describe a Place', 'practice', 15, 30, [
             {
-                type: 'practice_prompt', points: 8,
+                type: 'speaking_prompt', points: 8,
                 question: {
                     question: 'Cue Card:\nDescribe a place you have visited that you particularly liked.\n\nYou should say:\n- where it is\n- when you went there\n- what you did there\n- and explain why you liked it.\n\nYou have 1 minute to prepare. Then speak for 1-2 minutes.',
                     prepTime: 60,
@@ -841,7 +841,7 @@ async function seedIELTS() {
 
         await createLesson(client, siLevel, 3, 'Part 3: Abstract Discussion', 'practice', 15, 30, [
             {
-                type: 'practice_prompt', points: 8,
+                type: 'speaking_prompt', points: 8,
                 question: {
                     question: 'Part 3 Discussion Questions (following a Part 2 about "a place you visited"):\n\n1. Why do you think people like to travel to different places?\n2. Do you think tourism has a positive or negative impact on local communities?\n3. How has technology changed the way people travel?\n4. Do you think international travel will increase or decrease in the future? Why?',
                     prepTime: 15,
@@ -865,7 +865,7 @@ async function seedIELTS() {
         // ═══════════════════════════════════════════════════════════
 
         // WRITING UPPER-INTERMEDIATE
-        const wuLevel = levels.practice.upper_intermediate;
+        const wuLevel = levels.writing.upper_intermediate;
 
         await createLesson(client, wuLevel, 1, 'Task 1: Process Diagram', 'practice', 20, 35, [
             {
@@ -916,11 +916,11 @@ async function seedIELTS() {
         ]);
 
         // SPEAKING UPPER-INTERMEDIATE & ADVANCED
-        const suLevel = levels.practice.upper_intermediate;
+        const suLevel = levels.speaking.upper_intermediate;
 
         await createLesson(client, suLevel, 1, 'Extended Part 2: Describe an Achievement', 'practice', 20, 30, [
             {
-                type: 'practice_prompt', points: 8,
+                type: 'speaking_prompt', points: 8,
                 question: {
                     question: 'Cue Card:\nDescribe something you did that was successful.\n\nYou should say:\n- what it was\n- when you did it\n- how you prepared for it\n- and explain why you consider it successful.\n\nSpeak for 1-2 minutes.',
                     prepTime: 60,
@@ -939,7 +939,7 @@ async function seedIELTS() {
 
         await createLesson(client, suLevel, 2, 'Part 3: Education & Technology', 'practice', 20, 35, [
             {
-                type: 'practice_prompt', points: 10,
+                type: 'speaking_prompt', points: 10,
                 question: {
                     question: 'Part 3 Discussion:\n1. How has technology changed education in your country?\n2. Do you think online learning can replace traditional classrooms? Why or why not?\n3. What are the advantages and disadvantages of children using technology from a young age?\n4. How might education change in the next 20 years?',
                     prepTime: 15,
@@ -956,7 +956,7 @@ async function seedIELTS() {
 
         await createLesson(client, suLevel, 3, 'Part 3: Society & Change', 'practice', 20, 35, [
             {
-                type: 'practice_prompt', points: 10,
+                type: 'speaking_prompt', points: 10,
                 question: {
                     question: 'Part 3 Discussion:\n1. In what ways has life changed in your country compared to 50 years ago?\n2. Do you think these changes are mostly positive or negative?\n3. What role should governments play in managing social change?\n4. Is it possible for a society to modernise without losing its cultural identity?',
                     prepTime: 15,
@@ -1085,7 +1085,7 @@ async function seedIELTS() {
         ]);
 
         // WRITING & SPEAKING ADVANCED
-        const waLevel = levels.practice.advanced;
+        const waLevel = levels.writing.advanced;
 
         await createLesson(client, waLevel, 1, 'Academic Report: Comparing Data', 'practice', 25, 40, [
             {
@@ -1124,11 +1124,11 @@ async function seedIELTS() {
         ]);
 
         // SPEAKING ADVANCED
-        const saLevel = levels.practice.advanced;
+        const saLevel = levels.speaking.advanced;
 
         await createLesson(client, saLevel, 1, 'Complex Cue Card: Hypothetical Scenario', 'practice', 20, 40, [
             {
-                type: 'practice_prompt', points: 10,
+                type: 'speaking_prompt', points: 10,
                 question: {
                     question: 'Cue Card:\nDescribe a situation where you had to make a difficult decision.\n\nYou should say:\n- what the situation was\n- what options you had\n- what you decided to do\n- and explain whether you think you made the right decision.\n\nSpeak for 2 minutes.',
                     prepTime: 60,
@@ -1145,7 +1145,7 @@ async function seedIELTS() {
 
         await createLesson(client, saLevel, 2, 'Part 3: Philosophical Discussion', 'practice', 25, 45, [
             {
-                type: 'practice_prompt', points: 12,
+                type: 'speaking_prompt', points: 12,
                 question: {
                     question: 'Part 3 Questions:\n1. Do you think happiness is something people can learn, or is it innate?\n2. To what extent should governments be responsible for their citizens\' wellbeing?\n3. Some people argue that material wealth is necessary for happiness. Do you agree?\n4. How do cultural values influence what people consider a "good life"?',
                     prepTime: 15,
@@ -1167,7 +1167,7 @@ async function seedIELTS() {
 
         await createLesson(client, saLevel, 3, 'Full Mock Interview', 'practice', 30, 50, [
             {
-                type: 'practice_prompt', points: 5,
+                type: 'speaking_prompt', points: 5,
                 question: {
                     question: 'PART 1 (4-5 minutes):\nAnswer these questions naturally:\n1. What area do you live in?\n2. What do you like about it?\n3. Do you read much? What kind of things?\n4. Do you prefer reading paper books or e-books? Why?',
                     prepTime: 0,
@@ -1177,7 +1177,7 @@ async function seedIELTS() {
                 explanation: 'Part 1: Give concise but extended answers. Don\'t overthink.'
             },
             {
-                type: 'practice_prompt', points: 10,
+                type: 'speaking_prompt', points: 10,
                 question: {
                     question: 'PART 2 (3-4 minutes):\nDescribe a time when you helped someone.\n\nYou should say:\n- who you helped\n- what the situation was\n- what you did\n- and explain how you felt about helping this person.\n\n1 minute preparation, then speak for 2 minutes.',
                     prepTime: 60,
@@ -1187,7 +1187,7 @@ async function seedIELTS() {
                 explanation: 'Part 2: Tell a complete story with a beginning, middle, and end. Include feelings.'
             },
             {
-                type: 'practice_prompt', points: 10,
+                type: 'speaking_prompt', points: 10,
                 question: {
                     question: 'PART 3 (4-5 minutes):\n1. Is it important for people to help each other in modern society?\n2. Do you think people are more or less willing to help strangers compared to the past?\n3. Should helping others be taught in schools? How?\n4. What motivates people to volunteer — altruism or self-interest?',
                     prepTime: 0,
