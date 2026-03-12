@@ -297,9 +297,12 @@ setInterval(() => {
 
 // ============ SECURITY MIDDLEWARE ============
 
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(helmet({
     crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    hsts: isProduction,
     contentSecurityPolicy: {
+        useDefaults: false,
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://*.paypal.com"],
@@ -312,11 +315,29 @@ app.use(helmet({
             objectSrc: ["'none'"],
             frameAncestors: ["'self'"],
             baseUri: ["'self'"],
-            formAction: ["'self'"]
+            formAction: ["'self'"],
+            ...(isProduction ? { upgradeInsecureRequests: [] } : {})
         }
     }
 }));
 app.use(express.json());
+
+// Prevent caching of API responses
+app.use('/api', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+});
+
+// Temporary request logger
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        console.log(`${req.method} ${req.url} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+});
 
 // Block access to sensitive files and directories before static middleware
 app.use((req, res, next) => {
@@ -1212,7 +1233,7 @@ app.get('/api/skills/:id/levels', requireAuth, asyncHandler(async (req, res) => 
         unlocked: userXpInSkill >= (level.unlockThreshold || 0)
     }));
 
-    res.json(result);
+    res.json({ skill, levels: result });
 }));
 
 app.get('/api/levels/:id/lessons', requireAuth, asyncHandler(async (req, res) => {
@@ -1237,7 +1258,7 @@ app.get('/api/levels/:id/lessons', requireAuth, asyncHandler(async (req, res) =>
         attempts: progressMap[lesson.id] ? progressMap[lesson.id].attempts : 0
     }));
 
-    res.json(result);
+    res.json({ level, lessons: result });
 }));
 
 app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
@@ -1531,16 +1552,18 @@ app.get('/api/dashboard', requireAuth, asyncHandler(async (req, res) => {
     res.json({
         bandEstimate,
         perSkillProgress,
-        streakInfo: {
-            currentStreak: stats.currentStreak,
-            longestStreak: stats.longestStreak,
+        streak: {
+            current: stats.currentStreak,
+            longest: stats.longestStreak,
             lastActivityDate: stats.lastActivityDate
         },
-        dailyGoalProgress: {
-            todayXp,
-            dailyGoal,
+        dailyGoal: {
+            earned: todayXp,
+            target: dailyGoal,
             percentage: Math.min(100, Math.round((todayXp / dailyGoal) * 100))
         },
+        totalXp: stats.totalXp,
+        lessonsCompleted: stats.lessonsCompleted,
         recentActivity
     });
 }));
@@ -1821,6 +1844,12 @@ app.use((err, req, res, next) => {
 });
 
 // ============ SERVER STARTUP ============
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(`[ERROR] ${req.method} ${req.url}:`, err.message, err.stack);
+    res.status(500).json({ message: 'Internal server error' });
+});
 
 const PORT = config.port;
 

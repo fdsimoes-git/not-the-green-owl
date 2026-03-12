@@ -4,18 +4,13 @@ const { pool } = require('./pool');
 
 function parseJsonField(val) {
     if (val == null) return null;
-    if (typeof val === 'object') return val;
-    try {
-        return JSON.parse(val);
-    } catch (err) {
-        console.error('Failed to parse JSON field:', err.message, '— value preview:', String(val).slice(0, 50));
-        return null;
-    }
+    // pg driver auto-parses JSONB — values arrive as native JS types
+    // (string, number, boolean, array, object). Just return as-is.
+    return val;
 }
 
 function stringifyJsonField(val) {
     if (val == null) return null;
-    if (typeof val === 'string') return val;
     return JSON.stringify(val);
 }
 
@@ -357,11 +352,10 @@ async function getAllSkills() {
     return rows.map(row => ({
         id:          Number(row.id),
         name:        row.name,
-        slug:        row.slug,
-        description: row.description,
-        iconUrl:     row.icon_url,
-        sortOrder:   row.sort_order,
-        createdAt:   row.created_at ? row.created_at.toISOString() : null
+        displayName: row.display_name,
+        icon:        row.icon,
+        color:       row.color,
+        sortOrder:   row.sort_order
     }));
 }
 
@@ -372,11 +366,10 @@ async function getSkillById(id) {
     return {
         id:          Number(row.id),
         name:        row.name,
-        slug:        row.slug,
-        description: row.description,
-        iconUrl:     row.icon_url,
-        sortOrder:   row.sort_order,
-        createdAt:   row.created_at ? row.created_at.toISOString() : null
+        displayName: row.display_name,
+        icon:        row.icon,
+        color:       row.color,
+        sortOrder:   row.sort_order
     };
 }
 
@@ -386,13 +379,15 @@ async function getLevelsBySkill(skillId) {
         [skillId]
     );
     return rows.map(row => ({
-        id:          Number(row.id),
-        skillId:     Number(row.skill_id),
-        name:        row.name,
-        slug:        row.slug,
-        description: row.description,
-        sortOrder:   row.sort_order,
-        createdAt:   row.created_at ? row.created_at.toISOString() : null
+        id:              Number(row.id),
+        skillId:         Number(row.skill_id),
+        name:            row.name,
+        displayName:     row.display_name,
+        bandMin:         parseFloat(row.band_min),
+        bandMax:         parseFloat(row.band_max),
+        cefr:            row.cefr,
+        unlockThreshold: row.unlock_threshold,
+        sortOrder:       row.sort_order
     }));
 }
 
@@ -401,13 +396,15 @@ async function getLevelById(id) {
     if (!rows[0]) return null;
     const row = rows[0];
     return {
-        id:          Number(row.id),
-        skillId:     Number(row.skill_id),
-        name:        row.name,
-        slug:        row.slug,
-        description: row.description,
-        sortOrder:   row.sort_order,
-        createdAt:   row.created_at ? row.created_at.toISOString() : null
+        id:              Number(row.id),
+        skillId:         Number(row.skill_id),
+        name:            row.name,
+        displayName:     row.display_name,
+        bandMin:         parseFloat(row.band_min),
+        bandMax:         parseFloat(row.band_max),
+        cefr:            row.cefr,
+        unlockThreshold: row.unlock_threshold,
+        sortOrder:       row.sort_order
     };
 }
 
@@ -420,9 +417,10 @@ async function getLessonsByLevel(levelId) {
         id:          Number(row.id),
         levelId:     Number(row.level_id),
         title:       row.title,
-        slug:        row.slug,
         description: row.description,
+        lessonType:  row.lesson_type,
         xpReward:    row.xp_reward,
+        durationMin: row.duration_min,
         sortOrder:   row.sort_order,
         createdAt:   row.created_at ? row.created_at.toISOString() : null
     }));
@@ -436,11 +434,11 @@ async function getLessonById(id) {
         id:          Number(row.id),
         levelId:     Number(row.level_id),
         title:       row.title,
-        slug:        row.slug,
         description: row.description,
+        lessonType:  row.lesson_type,
         xpReward:    row.xp_reward,
-        sortOrder:   row.sort_order,
-        createdAt:   row.created_at ? row.created_at.toISOString() : null
+        durationMin: row.duration_min,
+        sortOrder:   row.sort_order
     };
 }
 
@@ -663,19 +661,19 @@ async function getDailyActivity(userId, startDate, endDate) {
 async function getAllAchievements() {
     const { rows } = await pool.query('SELECT * FROM achievements ORDER BY id');
     return rows.map(row => ({
-        id:          Number(row.id),
-        name:        row.name,
-        slug:        row.slug,
-        description: row.description,
-        iconUrl:     row.icon_url,
-        criteria:    parseJsonField(row.criteria),
-        createdAt:   row.created_at ? row.created_at.toISOString() : null
+        id:           Number(row.id),
+        name:         row.name,
+        displayName:  row.display_name,
+        description:  row.description,
+        icon:         row.icon,
+        criteriaJson: parseJsonField(row.criteria_json),
+        xpBonus:      row.xp_bonus
     }));
 }
 
 async function getUserAchievements(userId) {
     const { rows } = await pool.query(
-        `SELECT ua.*, a.name, a.slug, a.description, a.icon_url, a.criteria
+        `SELECT ua.*, a.name, a.display_name, a.description, a.icon, a.criteria_json
          FROM user_achievements ua
          JOIN achievements a ON a.id = ua.achievement_id
          WHERE ua.user_id = $1
@@ -687,10 +685,10 @@ async function getUserAchievements(userId) {
         achievementId: Number(row.achievement_id),
         earnedAt:      row.earned_at ? row.earned_at.toISOString() : null,
         name:          row.name,
-        slug:          row.slug,
+        displayName:   row.display_name,
         description:   row.description,
-        iconUrl:       row.icon_url,
-        criteria:      parseJsonField(row.criteria)
+        icon:          row.icon,
+        criteriaJson:  parseJsonField(row.criteria_json)
     }));
 }
 
