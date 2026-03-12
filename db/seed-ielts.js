@@ -62,7 +62,7 @@ async function seedIELTS() {
 
         const riLevel = levels.reading.intermediate;
 
-        // Lesson 1: Fire & Technology passage (inspired by Cambridge Test 1)
+        // Lesson 1: Fire & Technology passage (original IELTS-style content)
         // Change all lesson types in the calls to 'practice' per schema constraint
     // (Used 'practice' for consistency with schema constraint 'practice','quiz','review')
     await createLesson(client, riLevel, 1, 'A Spark, a Flint: History of Fire', 'practice', 20, 30, [
@@ -169,7 +169,7 @@ async function seedIELTS() {
             },
             {
                 type: 'true_false_ng', points: 2,
-                question: { question: 'The WZCS believes there are exactly 10,000 zoos worldwide.' },
+                question: { question: 'The WZCS believes there are about 10,000 zoos worldwide.' },
                 answer: 'true',
                 explanation: 'The WZCS "estimates that there are about 10,000 zoos in the world".'
             },
@@ -663,7 +663,7 @@ async function seedIELTS() {
             {
                 type: 'multiple_choice', points: 3,
                 question: {
-                    passage: 'Academic Skills Talk:\n"A tutorial provides a chance to share views with other students. It\'s not just a small lecture — it\'s interactive. When practice essays, I advise you to research your work well and always name the books you have read. This is called referencing.\n\nI must stress that plagiarism — presenting someone else\'s work as your own — is a serious offence. The university treats it very seriously and penalties can include failing the course or even expulsion. If you\'re unsure about how to reference properly, please ask."',
+                    passage: 'Academic Skills Talk:\n"A tutorial provides a chance to share views with other students. It\'s not just a small lecture — it\'s interactive. When practising essays, I advise you to research your work well and always name the books you have read. This is called referencing.\n\nI must stress that plagiarism — presenting someone else\'s work as your own — is a serious offence. The university treats it very seriously and penalties can include failing the course or even expulsion. If you\'re unsure about how to reference properly, please ask."',
                     question: 'According to the speaker, a tutorial is:',
                     options: ['A type of lecture', 'Less important than a lecture', 'A chance to share views', 'An alternative to group work']
                 },
@@ -1270,12 +1270,22 @@ async function createLesson(client, levelId, orderIndex, title, lessonType, dura
     );
     const lessonId = lessonRes.rows[0].id;
 
-    for (let i = 0; i < exercises.length; i++) {
-        const ex = exercises[i];
+    if (exercises.length > 0) {
+        const values = [];
+        const params = [];
+        let paramIdx = 1;
+
+        for (let i = 0; i < exercises.length; i++) {
+            const ex = exercises[i];
+            values.push(`($${paramIdx}, $${paramIdx+1}, $${paramIdx+2}, $${paramIdx+3}, $${paramIdx+4}, $${paramIdx+5}, $${paramIdx+6})`);
+            params.push(lessonId, ex.type, JSON.stringify(ex.question), JSON.stringify(ex.answer), ex.points, i + 1, ex.explanation ?? null);
+            paramIdx += 7;
+        }
+
         await client.query(
             `INSERT INTO exercises (lesson_id, exercise_type, question_json, answer_json, points, sort_order, explanation)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [lessonId, ex.type, JSON.stringify(ex.question), JSON.stringify(ex.answer), ex.points, i + 1, ex.explanation || null]
+             VALUES ${values.join(', ')}`,
+            params
         );
     }
     return lessonId;
