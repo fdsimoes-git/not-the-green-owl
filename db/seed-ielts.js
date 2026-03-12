@@ -1,18 +1,32 @@
 #!/usr/bin/env node
 /**
- * IELTS Practice Test Seed — adds intermediate+ lessons based on
- * Cambridge Practice Tests for IELTS format.
+ * IELTS Practice Seed — adds intermediate+ lessons with original
+ * IELTS-style exercises (inspired by the IELTS format, not sourced
+ * from any published test materials).
  * 
  * Run AFTER the main seed: node db/seed-ielts.js
  * 
- * This replaces placeholder exercises with real IELTS-style content
- * for intermediate, upper-intermediate, and advanced levels.
+ * ⚠️  This script DELETES existing lessons/exercises for the target
+ *     levels before re-seeding. Do NOT run against production without
+ *     the --force flag.
+ * 
+ * All reading passages, questions, and model answers are original
+ * content created for this project.
  */
 
 require('dotenv').config();
 const { pool } = require('./pool');
 
 async function seedIELTS() {
+    // Safety guard: refuse to run in production without explicit --force
+    if (process.env.NODE_ENV === 'production' && !process.argv.includes('--force')) {
+        console.error(
+            'ERROR: seed-ielts.js refuses to run in production.\n' +
+            'This script deletes and re-creates lessons. If you really mean it, pass --force.'
+        );
+        process.exit(1);
+    }
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
