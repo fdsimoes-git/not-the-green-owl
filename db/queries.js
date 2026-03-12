@@ -757,7 +757,7 @@ async function getWeeklyLeaderboard(limit) {
 
 async function getSkillProgressForUser(userId) {
     const { rows } = await pool.query(
-        `SELECT s.id AS skill_id, s.name AS skill_name, s.slug AS skill_slug,
+        `SELECT s.id AS skill_id, s.name AS skill_name,
                 COUNT(DISTINCT l2.id)::int AS total_lessons,
                 COUNT(DISTINCT CASE WHEN up.completed THEN up.lesson_id END)::int AS completed_lessons,
                 COALESCE(SUM(up.xp_earned), 0)::int AS total_xp_earned
@@ -765,14 +765,14 @@ async function getSkillProgressForUser(userId) {
          JOIN levels lv ON lv.skill_id = s.id
          JOIN lessons l2 ON l2.level_id = lv.id
          LEFT JOIN user_progress up ON up.lesson_id = l2.id AND up.user_id = $1
-         GROUP BY s.id, s.name, s.slug
+         GROUP BY s.id, s.name
          ORDER BY s.sort_order`,
         [userId]
     );
     return rows.map(row => ({
         skillId:          Number(row.skill_id),
         skillName:        row.skill_name,
-        skillSlug:        row.skill_slug,
+        skillSlug:        row.skill_name.toLowerCase(),
         totalLessons:     row.total_lessons,
         completedLessons: row.completed_lessons,
         totalXpEarned:    row.total_xp_earned
