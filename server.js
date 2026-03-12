@@ -1249,23 +1249,15 @@ app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
 
     const exercises = await db.getExercisesByLesson(lessonId);
 
-    const sanitizedExercises = exercises.map(ex => {
-        const exercise = {
-            id: ex.id,
-            lessonId: ex.lessonId,
-            type: ex.type,
-            prompt: ex.prompt,
-            points: ex.points,
-            explanation: ex.explanation,
-            sortOrder: ex.sortOrder
-        };
-
-        if (ex.options) {
-            exercise.options = ex.options;
-        }
-
-        return exercise;
-    });
+    const sanitizedExercises = exercises.map(ex => ({
+        id:           ex.id,
+        lessonId:     ex.lessonId,
+        exerciseType: ex.exerciseType,
+        questionJson: ex.questionJson,
+        points:       ex.points,
+        explanation:  ex.explanation,
+        sortOrder:    ex.sortOrder
+    }));
 
     res.json({
         ...lesson,
@@ -1276,9 +1268,9 @@ app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
 // ============ EXERCISE SCORING HELPERS ============
 
 function scoreExercise(exercise, userAnswer) {
-    const type = exercise.type;
-    const correctAnswer = exercise.correctAnswer;
-    const options = exercise.options;
+    const type = exercise.exerciseType;
+    const correctAnswer = exercise.answerJson;
+    const questionData = exercise.questionJson;
     const points = exercise.points || 10;
 
     switch (type) {
@@ -1295,8 +1287,9 @@ function scoreExercise(exercise, userAnswer) {
             if (given === correct) {
                 return { isCorrect: true, pointsEarned: points };
             }
-            if (options && options.alternatives && Array.isArray(options.alternatives)) {
-                const altMatch = options.alternatives.some(
+            const alternatives = questionData && questionData.alternatives;
+            if (Array.isArray(alternatives)) {
+                const altMatch = alternatives.some(
                     alt => String(alt).trim().toLowerCase() === given
                 );
                 if (altMatch) {
@@ -1317,12 +1310,12 @@ function scoreExercise(exercise, userAnswer) {
             if (!Array.isArray(userAnswer) || !Array.isArray(correctAnswer)) {
                 return { isCorrect: false, pointsEarned: 0 };
             }
+            // Frontend sends array of selected option strings (one per item, in order).
+            // Correct answer is also an array of strings in the expected order.
             const isCorrect = userAnswer.length === correctAnswer.length &&
-                userAnswer.every((pair, i) => {
-                    if (!pair || !correctAnswer[i]) return false;
-                    return String(pair[0]).trim().toLowerCase() === String(correctAnswer[i][0]).trim().toLowerCase() &&
-                           String(pair[1]).trim().toLowerCase() === String(correctAnswer[i][1]).trim().toLowerCase();
-                });
+                userAnswer.every((val, i) =>
+                    String(val).trim().toLowerCase() === String(correctAnswer[i]).trim().toLowerCase()
+                );
             return { isCorrect, pointsEarned: isCorrect ? points : 0 };
         }
 
@@ -1332,8 +1325,9 @@ function scoreExercise(exercise, userAnswer) {
             if (given === correct) {
                 return { isCorrect: true, pointsEarned: points };
             }
-            if (options && options.alternatives && Array.isArray(options.alternatives)) {
-                const altMatch = options.alternatives.some(
+            const alternatives = questionData && questionData.alternatives;
+            if (Array.isArray(alternatives)) {
+                const altMatch = alternatives.some(
                     alt => String(alt).trim().toLowerCase() === given
                 );
                 if (altMatch) {

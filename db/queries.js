@@ -450,16 +450,14 @@ async function getExercisesByLesson(lessonId) {
         [lessonId]
     );
     return rows.map(row => ({
-        id:           Number(row.id),
-        lessonId:     Number(row.lesson_id),
-        type:         row.type,
-        prompt:       row.prompt,
-        options:      parseJsonField(row.options),
-        correctAnswer: row.correct_answer,
-        explanation:  row.explanation,
-        points:       row.points,
-        sortOrder:    row.sort_order,
-        createdAt:    row.created_at ? row.created_at.toISOString() : null
+        id:            Number(row.id),
+        lessonId:      Number(row.lesson_id),
+        exerciseType:  row.exercise_type,
+        questionJson:  parseJsonField(row.question_json),
+        answerJson:    parseJsonField(row.answer_json),
+        points:        row.points,
+        explanation:   row.explanation,
+        sortOrder:     row.sort_order
     }));
 }
 

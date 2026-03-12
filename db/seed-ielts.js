@@ -18,13 +18,16 @@ require('dotenv').config();
 const { pool } = require('./pool');
 
 async function seedIELTS() {
-    // Safety guard: refuse to run in production without explicit --force
-    if (process.env.NODE_ENV === 'production' && !process.argv.includes('--force')) {
+    // Safety guard: only allow in development/test without --force
+    const env = process.env.NODE_ENV;
+    if (env !== 'development' && env !== 'test' && !process.argv.includes('--force')) {
         console.error(
-            'ERROR: seed-ielts.js refuses to run in production.\n' +
-            'This script deletes and re-creates lessons. If you really mean it, pass --force.'
+            `ERROR: seed-ielts.js refuses to run in "${env || 'unset'}" environment.\n` +
+            'This script deletes and re-creates lessons. Only allowed in development/test.\n' +
+            'If you really mean it, pass --force.'
         );
-        process.exit(1);
+        process.exitCode = 1;
+        return;
     }
 
     const client = await pool.connect();
@@ -127,12 +130,7 @@ async function seedIELTS() {
                     items: ['John Walker', 'Samuel Jones', 'Charles Sauria', 'Congreve'],
                     options: ['Made first modern-looking matches', 'Marketed copies as "Lucifers"', 'Created first strike-anywhere match', 'Military rocket-maker whose formula was borrowed']
                 },
-                answer: [
-                    ['John Walker', 'Made first modern-looking matches'],
-                    ['Samuel Jones', 'Marketed copies as "Lucifers"'],
-                    ['Charles Sauria', 'Created first strike-anywhere match'],
-                    ['Congreve', 'Military rocket-maker whose formula was borrowed']
-                ],
+                answer: ['Made first modern-looking matches', 'Marketed copies as "Lucifers"', 'Created first strike-anywhere match', 'Military rocket-maker whose formula was borrowed'],
                 explanation: 'Each inventor made a specific contribution to match development.'
             },
             {
@@ -226,12 +224,7 @@ async function seedIELTS() {
                     items: ['Paragraph A', 'Paragraph B', 'Paragraph C', 'Paragraph D'],
                     options: ['The human desire to build high', 'The birth of the skyscraper', 'Engineering solutions for tall structures', 'The debate over vertical cities']
                 },
-                answer: [
-                    ['Paragraph A', 'The human desire to build high'],
-                    ['Paragraph B', 'The birth of the skyscraper'],
-                    ['Paragraph C', 'Engineering solutions for tall structures'],
-                    ['Paragraph D', 'The debate over vertical cities']
-                ],
+                answer: ['The human desire to build high', 'The birth of the skyscraper', 'Engineering solutions for tall structures', 'The debate over vertical cities'],
                 explanation: 'Each paragraph has a distinct theme that matches its heading.'
             },
             {
