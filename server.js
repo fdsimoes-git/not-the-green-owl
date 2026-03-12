@@ -1260,7 +1260,7 @@ app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
     }));
 
     res.json({
-        ...lesson,
+        lesson,
         exercises: sanitizedExercises
     });
 }));

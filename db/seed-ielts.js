@@ -53,8 +53,7 @@ async function seedIELTS() {
                     throw new Error(`Missing level mapping for skill="${skill}", level="${level}".`);
                 }
                 const levelId = skillLevels[level];
-                
-                await client.query(`DELETE FROM exercises WHERE lesson_id IN (SELECT id FROM lessons WHERE level_id = $1)`, [levelId]);
+                // Exercises cascade-delete with lessons, no need to delete explicitly
                 await client.query(`DELETE FROM lessons WHERE level_id = $1`, [levelId]);
             }
         }
