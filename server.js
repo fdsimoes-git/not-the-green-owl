@@ -297,9 +297,12 @@ setInterval(() => {
 
 // ============ SECURITY MIDDLEWARE ============
 
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(helmet({
     crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    hsts: isProduction,
     contentSecurityPolicy: {
+        useDefaults: false,
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://*.paypal.com"],
@@ -312,11 +315,29 @@ app.use(helmet({
             objectSrc: ["'none'"],
             frameAncestors: ["'self'"],
             baseUri: ["'self'"],
-            formAction: ["'self'"]
+            formAction: ["'self'"],
+            ...(isProduction ? { upgradeInsecureRequests: [] } : {})
         }
     }
 }));
 app.use(express.json());
+
+// Prevent caching of API responses
+app.use('/api', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+});
+
+// Temporary request logger
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        console.log(`${req.method} ${req.url} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+});
 
 // Block access to sensitive files and directories before static middleware
 app.use((req, res, next) => {
@@ -1212,7 +1233,7 @@ app.get('/api/skills/:id/levels', requireAuth, asyncHandler(async (req, res) => 
         unlocked: userXpInSkill >= (level.unlockThreshold || 0)
     }));
 
-    res.json(result);
+    res.json({ skill, levels: result });
 }));
 
 app.get('/api/levels/:id/lessons', requireAuth, asyncHandler(async (req, res) => {
@@ -1237,7 +1258,7 @@ app.get('/api/levels/:id/lessons', requireAuth, asyncHandler(async (req, res) =>
         attempts: progressMap[lesson.id] ? progressMap[lesson.id].attempts : 0
     }));
 
-    res.json(result);
+    res.json({ level, lessons: result });
 }));
 
 app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
@@ -1249,26 +1270,18 @@ app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
 
     const exercises = await db.getExercisesByLesson(lessonId);
 
-    const sanitizedExercises = exercises.map(ex => {
-        const exercise = {
-            id: ex.id,
-            lessonId: ex.lessonId,
-            type: ex.type,
-            prompt: ex.prompt,
-            points: ex.points,
-            explanation: ex.explanation,
-            sortOrder: ex.sortOrder
-        };
-
-        if (ex.options) {
-            exercise.options = ex.options;
-        }
-
-        return exercise;
-    });
+    const sanitizedExercises = exercises.map(ex => ({
+        id:           ex.id,
+        lessonId:     ex.lessonId,
+        exerciseType: ex.exerciseType,
+        questionJson: ex.questionJson,
+        points:       ex.points,
+        explanation:  ex.explanation,
+        sortOrder:    ex.sortOrder
+    }));
 
     res.json({
-        ...lesson,
+        lesson,
         exercises: sanitizedExercises
     });
 }));
@@ -1276,9 +1289,9 @@ app.get('/api/lessons/:id', requireAuth, asyncHandler(async (req, res) => {
 // ============ EXERCISE SCORING HELPERS ============
 
 function scoreExercise(exercise, userAnswer) {
-    const type = exercise.type;
-    const correctAnswer = exercise.correctAnswer;
-    const options = exercise.options;
+    const type = exercise.exerciseType;
+    const correctAnswer = exercise.answerJson;
+    const questionData = exercise.questionJson;
     const points = exercise.points || 10;
 
     switch (type) {
@@ -1295,8 +1308,9 @@ function scoreExercise(exercise, userAnswer) {
             if (given === correct) {
                 return { isCorrect: true, pointsEarned: points };
             }
-            if (options && options.alternatives && Array.isArray(options.alternatives)) {
-                const altMatch = options.alternatives.some(
+            const alternatives = questionData && questionData.alternatives;
+            if (Array.isArray(alternatives)) {
+                const altMatch = alternatives.some(
                     alt => String(alt).trim().toLowerCase() === given
                 );
                 if (altMatch) {
@@ -1317,12 +1331,12 @@ function scoreExercise(exercise, userAnswer) {
             if (!Array.isArray(userAnswer) || !Array.isArray(correctAnswer)) {
                 return { isCorrect: false, pointsEarned: 0 };
             }
+            // Frontend sends array of selected option strings (one per item, in order).
+            // Correct answer is also an array of strings in the expected order.
             const isCorrect = userAnswer.length === correctAnswer.length &&
-                userAnswer.every((pair, i) => {
-                    if (!pair || !correctAnswer[i]) return false;
-                    return String(pair[0]).trim().toLowerCase() === String(correctAnswer[i][0]).trim().toLowerCase() &&
-                           String(pair[1]).trim().toLowerCase() === String(correctAnswer[i][1]).trim().toLowerCase();
-                });
+                userAnswer.every((val, i) =>
+                    String(val).trim().toLowerCase() === String(correctAnswer[i]).trim().toLowerCase()
+                );
             return { isCorrect, pointsEarned: isCorrect ? points : 0 };
         }
 
@@ -1332,8 +1346,9 @@ function scoreExercise(exercise, userAnswer) {
             if (given === correct) {
                 return { isCorrect: true, pointsEarned: points };
             }
-            if (options && options.alternatives && Array.isArray(options.alternatives)) {
-                const altMatch = options.alternatives.some(
+            const alternatives = questionData && questionData.alternatives;
+            if (Array.isArray(alternatives)) {
+                const altMatch = alternatives.some(
                     alt => String(alt).trim().toLowerCase() === given
                 );
                 if (altMatch) {
@@ -1537,16 +1552,18 @@ app.get('/api/dashboard', requireAuth, asyncHandler(async (req, res) => {
     res.json({
         bandEstimate,
         perSkillProgress,
-        streakInfo: {
-            currentStreak: stats.currentStreak,
-            longestStreak: stats.longestStreak,
+        streak: {
+            current: stats.currentStreak,
+            longest: stats.longestStreak,
             lastActivityDate: stats.lastActivityDate
         },
-        dailyGoalProgress: {
-            todayXp,
-            dailyGoal,
+        dailyGoal: {
+            earned: todayXp,
+            target: dailyGoal,
             percentage: Math.min(100, Math.round((todayXp / dailyGoal) * 100))
         },
+        totalXp: stats.totalXp,
+        lessonsCompleted: stats.lessonsCompleted,
         recentActivity
     });
 }));
@@ -1827,6 +1844,12 @@ app.use((err, req, res, next) => {
 });
 
 // ============ SERVER STARTUP ============
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(`[ERROR] ${req.method} ${req.url}:`, err.message, err.stack);
+    res.status(500).json({ message: 'Internal server error' });
+});
 
 const PORT = config.port;
 

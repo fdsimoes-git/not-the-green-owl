@@ -1,0 +1,20 @@
+name: Request Copilot Review
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  request-copilot-review:
+    if: ${{ github.event.pull_request.head.repo.fork == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Request Copilot Review
+        run: |
+          gh pr review ${{ github.event.pull_request.number }} --repo "$GITHUB_REPOSITORY" --comment --body "@github-copilot review"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
