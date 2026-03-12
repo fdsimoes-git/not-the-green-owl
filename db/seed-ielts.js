@@ -127,7 +127,12 @@ async function seedIELTS() {
                     items: ['John Walker', 'Samuel Jones', 'Charles Sauria', 'Congreve'],
                     options: ['Made first modern-looking matches', 'Marketed copies as "Lucifers"', 'Created first strike-anywhere match', 'Military rocket-maker whose formula was borrowed']
                 },
-                answer: ['Made first modern-looking matches', 'Marketed copies as "Lucifers"', 'Created first strike-anywhere match', 'Military rocket-maker whose formula was borrowed'],
+                answer: [
+                    ['John Walker', 'Made first modern-looking matches'],
+                    ['Samuel Jones', 'Marketed copies as "Lucifers"'],
+                    ['Charles Sauria', 'Created first strike-anywhere match'],
+                    ['Congreve', 'Military rocket-maker whose formula was borrowed']
+                ],
                 explanation: 'Each inventor made a specific contribution to match development.'
             },
             {
@@ -221,7 +226,12 @@ async function seedIELTS() {
                     items: ['Paragraph A', 'Paragraph B', 'Paragraph C', 'Paragraph D'],
                     options: ['The human desire to build high', 'The birth of the skyscraper', 'Engineering solutions for tall structures', 'The debate over vertical cities']
                 },
-                answer: ['The human desire to build high', 'The birth of the skyscraper', 'Engineering solutions for tall structures', 'The debate over vertical cities'],
+                answer: [
+                    ['Paragraph A', 'The human desire to build high'],
+                    ['Paragraph B', 'The birth of the skyscraper'],
+                    ['Paragraph C', 'Engineering solutions for tall structures'],
+                    ['Paragraph D', 'The debate over vertical cities']
+                ],
                 explanation: 'Each paragraph has a distinct theme that matches its heading.'
             },
             {
@@ -1220,7 +1230,7 @@ async function seedIELTS() {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('IELTS seed failed:', err);
-        process.exit(1);
+        process.exitCode = 1;
     } finally {
         client.release();
         await pool.end();
